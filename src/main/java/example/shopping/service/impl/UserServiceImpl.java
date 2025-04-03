@@ -14,7 +14,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,9 +31,6 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -82,7 +78,7 @@ public class UserServiceImpl implements UserService {
         // 创建新用户
         User user = new User();
         user.setUsername(registerDTO.getUsername());
-        user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
+        user.setPassword(registerDTO.getPassword());
         user.setPhone(registerDTO.getPhone());
         user.setRole("ROLE_USER"); // 默认为普通用户角色
         user.setStatus(1); // 1-启用
@@ -139,14 +135,14 @@ public class UserServiceImpl implements UserService {
         }
 
         // 验证旧密码
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+        if (!oldPassword.equals(user.getPassword())) {
             throw new BusinessException("旧密码不正确");
         }
 
         // 更新密码
         User updateUser = new User();
         updateUser.setId(userId);
-        updateUser.setPassword(passwordEncoder.encode(newPassword));
+        updateUser.setPassword(newPassword);
         updateUser.setUpdateTime(new Date());
         
         return userMapper.update(updateUser) > 0;

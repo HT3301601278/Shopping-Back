@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -20,9 +19,6 @@ public class DataInitializer {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private PlatformTransactionManager transactionManager;
@@ -54,7 +50,7 @@ public class DataInitializer {
         if (count == 0) {
             User admin = new User();
             admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setPassword("admin123");
             admin.setPhone("13800000000");
             admin.setRole("ROLE_ADMIN");
             admin.setStatus(1);

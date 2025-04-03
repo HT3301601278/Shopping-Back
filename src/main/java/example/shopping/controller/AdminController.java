@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * 管理员控制器
@@ -123,14 +123,14 @@ public class AdminController {
         if (store == null) {
             return Result.error("店铺不存在");
         }
-        
+
         Map<String, Object> detail = new HashMap<>();
         detail.put("storeId", store.getId());
         detail.put("storeName", store.getName());
         detail.put("averageRating", storeService.getCustomerServiceRating(storeId));
         detail.put("sessionCount", customerService.getSessionCount(storeId));
         detail.put("responseTime", customerService.getAverageResponseTime(storeId));
-        
+
         return Result.success(detail);
     }
 
@@ -142,4 +142,4 @@ public class AdminController {
     public Result<List<Map<String, Object>>> getServiceComplaints() {
         return Result.success(customerService.getComplaints());
     }
-} 
+}

@@ -11,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -22,7 +25,7 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     private CartMapper cartMapper;
-    
+
     @Autowired
     private ProductMapper productMapper;
 
@@ -40,28 +43,28 @@ public class CartServiceImpl implements CartService {
         if (product == null) {
             throw new BusinessException("商品不存在");
         }
-        
+
         // 检查商品是否已下架
         if (product.getStatus() != 1) {
             throw new BusinessException("商品已下架");
         }
-        
+
         // 检查库存是否足够
         if (product.getStock() < cartDTO.getQuantity()) {
             throw new BusinessException("商品库存不足");
         }
-        
+
         // 检查是否已经添加过该商品
         Cart existingCart = cartMapper.findByUserIdAndProductId(userId, cartDTO.getProductId());
         if (existingCart != null) {
             // 如果已经添加过，则更新数量
             int newQuantity = existingCart.getQuantity() + cartDTO.getQuantity();
-            
+
             // 再次检查库存是否足够
             if (product.getStock() < newQuantity) {
                 throw new BusinessException("商品库存不足");
             }
-            
+
             existingCart.setQuantity(newQuantity);
             existingCart.setSpecInfo(cartDTO.getSpecInfo());
             cartMapper.update(existingCart);
@@ -75,7 +78,7 @@ public class CartServiceImpl implements CartService {
             cart.setQuantity(cartDTO.getQuantity());
             cart.setSelected(true);
             cart.setCreateTime(new Date());
-            
+
             cartMapper.insert(cart);
             return cart;
         }
@@ -89,23 +92,23 @@ public class CartServiceImpl implements CartService {
         if (cart == null || !cart.getUserId().equals(userId)) {
             throw new BusinessException("购物车商品不存在");
         }
-        
+
         // 检查商品是否存在
         Product product = productMapper.findById(cart.getProductId());
         if (product == null) {
             throw new BusinessException("商品不存在");
         }
-        
+
         // 检查商品是否已下架
         if (product.getStatus() != 1) {
             throw new BusinessException("商品已下架");
         }
-        
+
         // 检查库存是否足够
         if (product.getStock() < quantity) {
             throw new BusinessException("商品库存不足");
         }
-        
+
         cartMapper.updateQuantity(id, quantity);
         cart.setQuantity(quantity);
         return cart;
@@ -119,7 +122,7 @@ public class CartServiceImpl implements CartService {
         if (cart == null || !cart.getUserId().equals(userId)) {
             throw new BusinessException("购物车商品不存在");
         }
-        
+
         cartMapper.updateSelected(id, selected);
         cart.setSelected(selected);
         return cart;
@@ -139,7 +142,7 @@ public class CartServiceImpl implements CartService {
         if (cart == null || !cart.getUserId().equals(userId)) {
             throw new BusinessException("购物车商品不存在");
         }
-        
+
         return cartMapper.deleteById(id) > 0;
     }
 
@@ -169,7 +172,7 @@ public class CartServiceImpl implements CartService {
                 .map(this::convertCartToMap)
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * 将购物车项转换为Map，包含商品详情
      * @param cart 购物车项
@@ -184,7 +187,7 @@ public class CartServiceImpl implements CartService {
         map.put("quantity", cart.getQuantity());
         map.put("selected", cart.getSelected());
         map.put("createTime", cart.getCreateTime());
-        
+
         // 获取商品信息
         Product product = productMapper.findById(cart.getProductId());
         if (product != null) {
@@ -192,7 +195,7 @@ public class CartServiceImpl implements CartService {
             // 计算总价
             map.put("totalPrice", product.getPrice().multiply(java.math.BigDecimal.valueOf(cart.getQuantity())));
         }
-        
+
         return map;
     }
-} 
+}

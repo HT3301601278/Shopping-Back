@@ -10,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -21,7 +24,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Autowired
     private FavoriteMapper favoriteMapper;
-    
+
     @Autowired
     private ProductMapper productMapper;
 
@@ -33,21 +36,21 @@ public class FavoriteServiceImpl implements FavoriteService {
         if (product == null) {
             throw new BusinessException("商品不存在");
         }
-        
+
         // 检查是否已经收藏
         Favorite existingFavorite = favoriteMapper.findByUserIdAndProductId(userId, productId);
         if (existingFavorite != null) {
             throw new BusinessException("已经收藏过该商品");
         }
-        
+
         // 创建收藏
         Favorite favorite = new Favorite();
         favorite.setUserId(userId);
         favorite.setProductId(productId);
         favorite.setCreateTime(new Date());
-        
+
         favoriteMapper.insert(favorite);
-        
+
         return favorite;
     }
 
@@ -59,7 +62,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         if (existingFavorite == null) {
             throw new BusinessException("尚未收藏该商品");
         }
-        
+
         return favoriteMapper.deleteByUserIdAndProductId(userId, productId) > 0;
     }
 
@@ -73,17 +76,17 @@ public class FavoriteServiceImpl implements FavoriteService {
     public Map<String, Object> findByUserIdWithPage(Long userId, int pageNum, int pageSize) {
         int offset = (pageNum - 1) * pageSize;
         List<Favorite> favorites = favoriteMapper.findByUserIdWithPage(userId, offset, pageSize);
-        
+
         List<Map<String, Object>> list = favorites.stream()
                 .map(this::convertFavoriteToMap)
                 .collect(Collectors.toList());
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("list", list);
         result.put("pageNum", pageNum);
         result.put("pageSize", pageSize);
         // TODO: 添加总数统计
-        
+
         return result;
     }
 
@@ -96,7 +99,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     public int countByProductId(Long productId) {
         return favoriteMapper.countByProductId(productId);
     }
-    
+
     /**
      * 转换收藏对象为Map
      * @param favorite 收藏对象
@@ -108,13 +111,13 @@ public class FavoriteServiceImpl implements FavoriteService {
         map.put("userId", favorite.getUserId());
         map.put("productId", favorite.getProductId());
         map.put("createTime", favorite.getCreateTime());
-        
+
         // 获取商品信息
         Product product = productMapper.findById(favorite.getProductId());
         if (product != null) {
             map.put("product", product);
         }
-        
+
         return map;
     }
-} 
+}

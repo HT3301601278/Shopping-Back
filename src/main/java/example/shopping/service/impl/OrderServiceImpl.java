@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 订单服务实现类
@@ -29,13 +28,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderMapper orderMapper;
-    
+
     @Autowired
     private ProductMapper productMapper;
-    
+
     @Autowired
     private UserMapper userMapper;
-    
+
     @Autowired
     private CartService cartService;
 
@@ -47,46 +46,46 @@ public class OrderServiceImpl implements OrderService {
         if (user == null) {
             throw new BusinessException("用户不存在");
         }
-        
+
         // 检查订单项是否为空
         if (orderDTO.getItems() == null || orderDTO.getItems().isEmpty()) {
             throw new BusinessException("订单项不能为空");
         }
-        
+
         // 生成订单编号
         String orderNo = generateOrderNo();
-        
+
         // 计算总金额并构建订单项JSON
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<Map<String, Object>> orderItems = new ArrayList<>();
-        
+
         for (OrderDTO.OrderItemDTO item : orderDTO.getItems()) {
             // 查询商品信息
             Product product = productMapper.findById(item.getProductId());
             if (product == null) {
                 throw new BusinessException("商品不存在: " + item.getProductId());
             }
-            
+
             // 检查商品是否已下架
             if (product.getStatus() != 1) {
                 throw new BusinessException("商品已下架: " + product.getName());
             }
-            
+
             // 检查库存是否足够
             if (product.getStock() < item.getQuantity()) {
                 throw new BusinessException("商品库存不足: " + product.getName());
             }
-            
+
             // 减少商品库存
             int result = productMapper.decreaseStock(item.getProductId(), item.getQuantity());
             if (result <= 0) {
                 throw new BusinessException("商品库存不足: " + product.getName());
             }
-            
+
             // 计算商品总价
             BigDecimal itemTotalPrice = product.getPrice().multiply(new BigDecimal(item.getQuantity()));
             totalAmount = totalAmount.add(itemTotalPrice);
-            
+
             // 构建订单项
             Map<String, Object> orderItem = new HashMap<>();
             orderItem.put("productId", item.getProductId());
@@ -96,14 +95,14 @@ public class OrderServiceImpl implements OrderService {
             orderItem.put("specInfo", item.getSpecInfo());
             orderItem.put("totalPrice", itemTotalPrice);
             orderItems.add(orderItem);
-            
+
             // 更新商品销量
             productMapper.updateSales(item.getProductId(), item.getQuantity());
         }
-        
+
         // 获取收货地址
         String addressInfo = getAddressInfo(user, orderDTO.getAddressId());
-        
+
         // 创建订单
         Order order = new Order();
         order.setOrderNo(orderNo);
@@ -118,12 +117,12 @@ public class OrderServiceImpl implements OrderService {
         Date now = new Date();
         order.setCreateTime(now);
         order.setUpdateTime(now);
-        
+
         orderMapper.insert(order);
-        
+
         // 清空购物车中已购买的商品
         cartService.deleteSelected(userId);
-        
+
         return order;
     }
 
@@ -156,13 +155,13 @@ public class OrderServiceImpl implements OrderService {
     public Map<String, Object> findByPage(int pageNum, int pageSize) {
         int offset = (pageNum - 1) * pageSize;
         List<Order> orders = orderMapper.findByPage(offset, pageSize);
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("list", orders);
         result.put("pageNum", pageNum);
         result.put("pageSize", pageSize);
         // TODO: 添加总数统计
-        
+
         return result;
     }
 
@@ -173,11 +172,11 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException("订单不存在");
         }
-        
+
         orderMapper.updateStatus(id, status);
         order.setStatus(status);
         order.setUpdateTime(new Date());
-        
+
         return order;
     }
 
@@ -188,23 +187,23 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException("订单不存在");
         }
-        
+
         // 检查订单是否属于该用户
         if (!order.getUserId().equals(userId)) {
             throw new BusinessException("无权操作此订单");
         }
-        
+
         // 检查订单状态是否为待付款
         if (order.getStatus() != 0) {
             throw new BusinessException("只能取消待付款订单");
         }
-        
+
         // 恢复商品库存
         List<Map> orderItemsList = JSON.parseArray(order.getItems(), Map.class);
         for (Map item : orderItemsList) {
             Long productId = Long.valueOf(item.get("productId").toString());
             Integer quantity = Integer.valueOf(item.get("quantity").toString());
-            
+
             // 增加商品库存
             Product product = productMapper.findById(productId);
             if (product != null) {
@@ -213,7 +212,7 @@ public class OrderServiceImpl implements OrderService {
                 productMapper.update(product);
             }
         }
-        
+
         // 更新订单状态为已取消
         order.setStatus(4); // 4-已取消
         order.setUpdateTime(new Date());
@@ -227,23 +226,23 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException("订单不存在");
         }
-        
+
         // 检查订单是否属于该用户
         if (!order.getUserId().equals(userId)) {
             throw new BusinessException("无权操作此订单");
         }
-        
+
         // 检查订单状态是否为待付款
         if (order.getStatus() != 0) {
             throw new BusinessException("订单状态错误");
         }
-        
+
         // 模拟支付成功
         order.setStatus(1); // 1-待发货
         order.setPaymentType(paymentType);
         order.setPaymentTime(new Date());
         order.setUpdateTime(new Date());
-        
+
         return orderMapper.update(order) > 0;
     }
 
@@ -254,16 +253,16 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException("订单不存在");
         }
-        
+
         // 检查订单状态是否为待发货
         if (order.getStatus() != 1) {
             throw new BusinessException("订单状态错误");
         }
-        
+
         order.setStatus(2); // 2-待收货
         order.setShippingTime(new Date());
         order.setUpdateTime(new Date());
-        
+
         return orderMapper.update(order) > 0;
     }
 
@@ -274,20 +273,20 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException("订单不存在");
         }
-        
+
         // 检查订单是否属于该用户
         if (!order.getUserId().equals(userId)) {
             throw new BusinessException("无权操作此订单");
         }
-        
+
         // 检查订单状态是否为待收货
         if (order.getStatus() != 2) {
             throw new BusinessException("订单状态错误");
         }
-        
+
         order.setStatus(3); // 3-已完成
         order.setUpdateTime(new Date());
-        
+
         return orderMapper.update(order) > 0;
     }
 
@@ -298,21 +297,21 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException("订单不存在");
         }
-        
+
         // 检查订单是否属于该用户
         if (!order.getUserId().equals(userId)) {
             throw new BusinessException("无权操作此订单");
         }
-        
+
         // 检查订单状态是否为待发货或待收货
         if (order.getStatus() != 1 && order.getStatus() != 2) {
             throw new BusinessException("当前订单状态不支持申请退款");
         }
-        
+
         order.setRefundStatus(1); // 1-申请退款
         order.setRefundReason(reason);
         order.setUpdateTime(new Date());
-        
+
         return orderMapper.update(order) > 0;
     }
 
@@ -323,23 +322,23 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             throw new BusinessException("订单不存在");
         }
-        
+
         // 检查退款状态是否为申请退款
         if (order.getRefundStatus() != 1) {
             throw new BusinessException("退款状态错误");
         }
-        
+
         if (isAgree) {
             // 同意退款
             order.setRefundStatus(2); // 2-退款成功
             order.setStatus(5); // 5-已退款
-            
+
             // 恢复商品库存
             List<Map> orderItemsList = JSON.parseArray(order.getItems(), Map.class);
             for (Map item : orderItemsList) {
                 Long productId = Long.valueOf(item.get("productId").toString());
                 Integer quantity = Integer.valueOf(item.get("quantity").toString());
-                
+
                 // 增加商品库存
                 Product product = productMapper.findById(productId);
                 if (product != null) {
@@ -352,7 +351,7 @@ public class OrderServiceImpl implements OrderService {
             // 拒绝退款
             order.setRefundStatus(3); // 3-退款失败
         }
-        
+
         order.setUpdateTime(new Date());
         return orderMapper.update(order) > 0;
     }
@@ -365,7 +364,7 @@ public class OrderServiceImpl implements OrderService {
         result.put("pendingReceipt", orderMapper.findByUserIdAndStatus(userId, 2).size());
         result.put("completed", orderMapper.findByUserIdAndStatus(userId, 3).size());
         result.put("pendingReview", orderMapper.findPendingReview(userId).size());
-        
+
         return result;
     }
 
@@ -388,7 +387,7 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> findPendingReview(Long userId) {
         return orderMapper.findPendingReview(userId);
     }
-    
+
     /**
      * 生成订单编号
      * @return 订单编号
@@ -401,7 +400,7 @@ public class OrderServiceImpl implements OrderService {
         sb.append(String.format("%06d", new Random().nextInt(1000000)));
         return sb.toString();
     }
-    
+
     /**
      * 获取收货地址信息
      * @param user 用户
@@ -413,21 +412,21 @@ public class OrderServiceImpl implements OrderService {
         if (addresses == null || addresses.isEmpty()) {
             throw new BusinessException("用户没有配置收货地址");
         }
-        
+
         List<Map> addressList = JSON.parseArray(addresses, Map.class);
         Map selectedAddress = null;
-        
+
         for (Map address : addressList) {
             if (address.get("id").equals(addressId.toString())) {
                 selectedAddress = address;
                 break;
             }
         }
-        
+
         if (selectedAddress == null) {
             throw new BusinessException("收货地址不存在");
         }
-        
+
         return JSON.toJSONString(selectedAddress);
     }
-} 
+}

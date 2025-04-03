@@ -20,4 +20,5 @@ public class Review {
     private Integer status;      // 状态(0-审核中, 1-显示, 2-隐藏)
     private Boolean isTop;       // 是否置顶
     private Date createTime;
+    private Date updateTime;
 } 

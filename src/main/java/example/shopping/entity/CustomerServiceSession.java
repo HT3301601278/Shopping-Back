@@ -12,9 +12,11 @@ public class CustomerServiceSession {
     private Long id;
     private Long userId;
     private Long storeId;
-    private String status;     // 会话状态(ongoing-进行中, closed-已结束)
+    private Integer status;     // 会话状态(0-进行中, 1-已结束)
     private Date startTime;
     private Date endTime;
-    private String evaluation;
-    private Integer rating;    // 满意度评分
+    private Integer evaluation; // 用户评价(1-5星)
+    private String remark;      // 评价备注
+    private Date createTime;
+    private Date updateTime;
 } 

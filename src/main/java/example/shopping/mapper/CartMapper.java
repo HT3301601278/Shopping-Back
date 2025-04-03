@@ -121,4 +121,17 @@ public interface CartMapper {
      */
     @Delete("DELETE FROM carts WHERE user_id = #{userId} AND selected = 1")
     int deleteSelectedByUserId(Long userId);
+    
+    /**
+     * 根据用户ID、商品ID和规格信息查询购物车项
+     * @param userId 用户ID
+     * @param productId 商品ID
+     * @param specInfo 规格信息
+     * @return 购物车项
+     */
+    @Select("SELECT * FROM carts WHERE user_id = #{userId} AND product_id = #{productId} AND spec_info = #{specInfo}")
+    Cart findByUserIdAndProductIdAndSpecInfo(
+            @Param("userId") Long userId, 
+            @Param("productId") Long productId, 
+            @Param("specInfo") String specInfo);
 } 

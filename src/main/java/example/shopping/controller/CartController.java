@@ -49,6 +49,18 @@ public class CartController {
         Long userId = getCurrentUserId();
         return Result.success(cartService.add(userId, cartDTO), "添加购物车成功");
     }
+    
+    /**
+     * 批量添加商品到购物车
+     * @param cartDTOList 购物车商品信息列表
+     * @return 添加结果
+     */
+    @PostMapping("/batch")
+    public Result<Integer> batchAddToCart(@Valid @RequestBody List<CartDTO> cartDTOList) {
+        Long userId = getCurrentUserId();
+        int count = cartService.batchAdd(userId, cartDTOList);
+        return Result.success(count, "成功添加" + count + "件商品到购物车");
+    }
 
     /**
      * 更新购物车商品数量
@@ -134,6 +146,30 @@ public class CartController {
     public Result<List<Map<String, Object>>> getSelectedCartList() {
         Long userId = getCurrentUserId();
         return Result.success(cartService.getSelectedCartList(userId));
+    }
+    
+    /**
+     * 获取购物车已选择商品的总价
+     * @return 总价信息
+     */
+    @GetMapping("/amount")
+    public Result<Map<String, Object>> getCartAmount() {
+        Long userId = getCurrentUserId();
+        return Result.success(cartService.getCartAmount(userId));
+    }
+    
+    /**
+     * 检查商品是否已在购物车中
+     * @param productId 商品ID
+     * @param specInfo 规格信息
+     * @return 是否在购物车中
+     */
+    @GetMapping("/check")
+    public Result<Boolean> checkProductInCart(@RequestParam Long productId, 
+                                             @RequestParam(required = false) String specInfo) {
+        Long userId = getCurrentUserId();
+        Cart cart = cartService.checkProductInCart(userId, productId, specInfo);
+        return Result.success(cart != null);
     }
 
     /**

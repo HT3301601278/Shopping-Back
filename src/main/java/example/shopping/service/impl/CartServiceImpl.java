@@ -86,6 +86,24 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
+    public int batchAdd(Long userId, List<CartDTO> cartDTOList) {
+        int successCount = 0;
+        
+        for (CartDTO cartDTO : cartDTOList) {
+            try {
+                add(userId, cartDTO);
+                successCount++;
+            } catch (BusinessException e) {
+                // 记录异常，继续处理下一个
+                // 这里可以选择记录日志
+            }
+        }
+        
+        return successCount;
+    }
+
+    @Override
+    @Transactional
     public Cart updateQuantity(Long userId, Long id, Integer quantity) {
         // 检查购物车项是否存在
         Cart cart = cartMapper.findById(id);
@@ -171,6 +189,25 @@ public class CartServiceImpl implements CartService {
                 .filter(Cart::getSelected)
                 .map(this::convertCartToMap)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, Object> getCartAmount(Long userId) {
+        List<Map<String, Object>> selectedCartList = getSelectedCartList(userId);
+        Map<String, Object> result = new HashMap<>();
+        
+        java.math.BigDecimal totalAmount = selectedCartList.stream()
+                .map(item -> (java.math.BigDecimal) item.get("totalPrice"))
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        
+        result.put("totalAmount", totalAmount);
+        result.put("itemCount", selectedCartList.size());
+        return result;
+    }
+
+    @Override
+    public Cart checkProductInCart(Long userId, Long productId, String specInfo) {
+        return cartMapper.findByUserIdAndProductIdAndSpecInfo(userId, productId, specInfo);
     }
 
     /**

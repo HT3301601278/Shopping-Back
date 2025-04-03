@@ -27,6 +27,14 @@ public interface CartService {
     Cart add(Long userId, CartDTO cartDTO);
     
     /**
+     * 批量添加商品到购物车
+     * @param userId 用户ID
+     * @param cartDTOList 购物车商品信息列表
+     * @return 添加成功的数量
+     */
+    int batchAdd(Long userId, List<CartDTO> cartDTOList);
+    
+    /**
      * 更新购物车商品数量
      * @param userId 用户ID
      * @param id 购物车项ID
@@ -87,4 +95,20 @@ public interface CartService {
      * @return 已选择的商品列表，包含商品详情
      */
     List<Map<String, Object>> getSelectedCartList(Long userId);
+    
+    /**
+     * 获取用户购物车已选择商品的总价
+     * @param userId 用户ID
+     * @return 总价
+     */
+    Map<String, Object> getCartAmount(Long userId);
+    
+    /**
+     * 检查商品是否在购物车中
+     * @param userId 用户ID
+     * @param productId 商品ID
+     * @param specInfo 规格信息
+     * @return 如果在购物车中存在则返回Cart对象，否则返回null
+     */
+    Cart checkProductInCart(Long userId, Long productId, String specInfo);
 } 

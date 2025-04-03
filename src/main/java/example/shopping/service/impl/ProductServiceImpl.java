@@ -1,0 +1,166 @@
+package example.shopping.service.impl;
+
+import example.shopping.entity.Product;
+import example.shopping.exception.BusinessException;
+import example.shopping.mapper.ProductMapper;
+import example.shopping.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 商品服务实现类
+ */
+@Service
+public class ProductServiceImpl implements ProductService {
+
+    @Autowired
+    private ProductMapper productMapper;
+
+    @Override
+    public List<Product> findAll() {
+        return productMapper.findAll();
+    }
+
+    @Override
+    public Product findById(Long id) {
+        return productMapper.findById(id);
+    }
+
+    @Override
+    public List<Product> findByStoreId(Long storeId) {
+        return productMapper.findByStoreId(storeId);
+    }
+
+    @Override
+    public List<Product> findByCategoryId(Long categoryId) {
+        return productMapper.findByCategoryId(categoryId);
+    }
+
+    @Override
+    public Map<String, Object> findByPage(int pageNum, int pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+        List<Product> products = productMapper.findByPage(offset, pageSize);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", products);
+        result.put("pageNum", pageNum);
+        result.put("pageSize", pageSize);
+        // TODO: 添加总数统计
+        
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public Product add(Product product) {
+        // 设置默认值
+        if (product.getStatus() == null) {
+            product.setStatus(1); // 1-上架
+        }
+        if (product.getSales() == null) {
+            product.setSales(0);
+        }
+        if (product.getRating() == null) {
+            product.setRating(5.0); // 默认5星
+        }
+        
+        Date now = new Date();
+        product.setCreateTime(now);
+        product.setUpdateTime(now);
+        
+        productMapper.insert(product);
+        return product;
+    }
+
+    @Override
+    @Transactional
+    public Product update(Product product) {
+        Product existingProduct = productMapper.findById(product.getId());
+        if (existingProduct == null) {
+            throw new BusinessException("商品不存在");
+        }
+        
+        product.setUpdateTime(new Date());
+        productMapper.update(product);
+        
+        return productMapper.findById(product.getId());
+    }
+
+    @Override
+    @Transactional
+    public boolean delete(Long id) {
+        Product product = productMapper.findById(id);
+        if (product == null) {
+            throw new BusinessException("商品不存在");
+        }
+        
+        return productMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    @Transactional
+    public boolean updateSales(Long id, int increment) {
+        if (increment <= 0) {
+            throw new BusinessException("销量增量必须大于0");
+        }
+        
+        Product product = productMapper.findById(id);
+        if (product == null) {
+            throw new BusinessException("商品不存在");
+        }
+        
+        return productMapper.updateSales(id, increment) > 0;
+    }
+
+    @Override
+    @Transactional
+    public boolean decreaseStock(Long id, int decrement) {
+        if (decrement <= 0) {
+            throw new BusinessException("库存减少量必须大于0");
+        }
+        
+        Product product = productMapper.findById(id);
+        if (product == null) {
+            throw new BusinessException("商品不存在");
+        }
+        
+        if (product.getStock() < decrement) {
+            throw new BusinessException("商品库存不足");
+        }
+        
+        return productMapper.decreaseStock(id, decrement) > 0;
+    }
+
+    @Override
+    public List<Product> search(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new BusinessException("搜索关键字不能为空");
+        }
+        
+        return productMapper.search(keyword);
+    }
+
+    @Override
+    public List<Product> findHotProducts(int limit) {
+        if (limit <= 0) {
+            limit = 10; // 默认返回10个
+        }
+        
+        return productMapper.findHotProducts(limit);
+    }
+
+    @Override
+    public List<Product> findNewProducts(int limit) {
+        if (limit <= 0) {
+            limit = 10; // 默认返回10个
+        }
+        
+        return productMapper.findNewProducts(limit);
+    }
+} 

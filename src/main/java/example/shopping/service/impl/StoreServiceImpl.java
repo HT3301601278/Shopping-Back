@@ -155,4 +155,13 @@ public class StoreServiceImpl implements StoreService {
         Double avgRating = sessionMapper.calculateAverageEvaluation(id);
         return avgRating != null ? avgRating : 5.0; // 默认5分
     }
+
+    @Override
+    public List<Store> findByStatus(Integer status) {
+        if (status < 0 || status > 2) {
+            throw new BusinessException("状态值无效");
+        }
+        
+        return storeMapper.findByStatus(status);
+    }
 } 

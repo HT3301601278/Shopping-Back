@@ -75,4 +75,34 @@ public class CustomerServiceDTO {
          */
         private String remark;
     }
+    
+    /**
+     * 投诉处理DTO
+     */
+    @Data
+    public static class ComplaintDTO {
+        
+        /**
+         * 处理状态(0-待处理, 1-已处理, 2-已驳回)
+         */
+        @NotNull(message = "处理状态不能为空")
+        private Integer status;
+        
+        /**
+         * 处理结果
+         */
+        @NotBlank(message = "处理结果不能为空")
+        private String result;
+        
+        /**
+         * 是否对商家进行处罚
+         */
+        @NotNull(message = "是否处罚不能为空")
+        private Boolean isPenalty;
+        
+        /**
+         * 处罚内容
+         */
+        private String penaltyContent;
+    }
 } 

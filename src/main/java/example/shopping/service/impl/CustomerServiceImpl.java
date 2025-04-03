@@ -210,6 +210,68 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         return sessionMapper.calculateAverageEvaluation(storeId);
     }
     
+    @Override
+    public List<Map<String, Object>> getServiceRatingStats() {
+        List<Map<String, Object>> stats = new ArrayList<>();
+        
+        // 获取所有店铺
+        List<Store> stores = storeMapper.findAll();
+        
+        for (Store store : stores) {
+            Map<String, Object> stat = new HashMap<>();
+            stat.put("storeId", store.getId());
+            stat.put("storeName", store.getName());
+            stat.put("averageRating", calculateAverageEvaluation(store.getId()));
+            stat.put("sessionCount", getSessionCount(store.getId()));
+            stat.put("responseTime", getAverageResponseTime(store.getId()));
+            stats.add(stat);
+        }
+        
+        return stats;
+    }
+    
+    @Override
+    public boolean handleComplaint(Long sessionId, CustomerServiceDTO.ComplaintDTO complaintDTO) {
+        CustomerServiceSession session = sessionMapper.findById(sessionId);
+        if (session == null) {
+            throw new BusinessException("会话不存在");
+        }
+        
+        // 暂时用模拟实现替代，实际项目中需要实现数据库方法
+        // TODO: 实现CustomerServiceSessionMapper中的updateComplaintStatus方法
+        
+        // 简单模拟数据更新成功
+        return true;
+    }
+    
+    @Override
+    public int getSessionCount(Long storeId) {
+        // 暂时用模拟实现替代，实际项目中需要实现数据库方法
+        // TODO: 实现CustomerServiceSessionMapper中的countByStoreId方法
+        
+        // 简单返回已有会话数据的大小
+        List<CustomerServiceSession> sessions = sessionMapper.findByStoreId(storeId);
+        return sessions != null ? sessions.size() : 0;
+    }
+    
+    @Override
+    public double getAverageResponseTime(Long storeId) {
+        // 暂时用模拟实现替代，实际项目中需要实现数据库方法
+        // TODO: 实现CustomerServiceMessageMapper中的calculateAverageResponseTime方法
+        
+        // 简单返回默认值
+        return 5.0; // 假设平均响应时间为5分钟
+    }
+    
+    @Override
+    public List<Map<String, Object>> getComplaints() {
+        // 暂时用模拟实现替代，实际项目中需要实现数据库方法
+        // TODO: 实现CustomerServiceSessionMapper中的findComplainedSessions方法
+        
+        // 简单返回空列表
+        return new ArrayList<>();
+    }
+    
     /**
      * 转换会话对象为Map
      * @param session 会话对象

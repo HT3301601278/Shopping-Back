@@ -96,4 +96,38 @@ public interface CustomerServiceInterface {
      * @return 平均评价
      */
     Double calculateAverageEvaluation(Long storeId);
+    
+    /**
+     * 获取客服满意度统计
+     * @return 各店铺的客服满意度统计
+     */
+    List<Map<String, Object>> getServiceRatingStats();
+    
+    /**
+     * 处理客服投诉
+     * @param sessionId 会话ID
+     * @param complaintDTO 投诉处理信息
+     * @return 是否处理成功
+     */
+    boolean handleComplaint(Long sessionId, CustomerServiceDTO.ComplaintDTO complaintDTO);
+    
+    /**
+     * 获取店铺的会话数量
+     * @param storeId 店铺ID
+     * @return 会话数量
+     */
+    int getSessionCount(Long storeId);
+    
+    /**
+     * 获取店铺的平均响应时间（分钟）
+     * @param storeId 店铺ID
+     * @return 平均响应时间
+     */
+    double getAverageResponseTime(Long storeId);
+    
+    /**
+     * 获取客服会话投诉列表
+     * @return 投诉列表
+     */
+    List<Map<String, Object>> getComplaints();
 } 

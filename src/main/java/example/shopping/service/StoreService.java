@@ -55,6 +55,13 @@ public interface StoreService {
     Map<String, Object> findByPage(int pageNum, int pageSize);
     
     /**
+     * 根据状态查询店铺
+     * @param status 店铺状态(0-审核中, 1-正常, 2-关闭)
+     * @return 店铺列表
+     */
+    List<Store> findByStatus(Integer status);
+    
+    /**
      * 搜索店铺
      * @param keyword 关键字
      * @return 店铺列表

@@ -70,22 +70,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     @Override
-    public List<Announcement> findVisible() {
+    public List<Announcement> findAllVisible() {
         return announcementMapper.findVisible();
-    }
-
-    @Override
-    public Map<String, Object> findByPage(int pageNum, int pageSize) {
-        int offset = (pageNum - 1) * pageSize;
-        List<Announcement> announcements = announcementMapper.findByPage(offset, pageSize);
-        
-        Map<String, Object> result = new HashMap<>();
-        result.put("list", announcements);
-        result.put("pageNum", pageNum);
-        result.put("pageSize", pageSize);
-        // TODO: 添加总数统计
-        
-        return result;
     }
 
     @Override
@@ -142,19 +128,34 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     @Override
-    public List<Announcement> findUnreadByUserId(Long userId) {
-        List<Announcement> visibleAnnouncements = findVisible();
-        return visibleAnnouncements.stream()
+    public int getUnreadCount(Long userId) {
+        List<Announcement> unreadAnnouncements = findAllVisible().stream()
                 .filter(a -> !isRead(a, userId))
                 .collect(Collectors.toList());
+        return unreadAnnouncements.size();
     }
 
     @Override
-    public List<Announcement> findReadByUserId(Long userId) {
-        List<Announcement> visibleAnnouncements = findVisible();
-        return visibleAnnouncements.stream()
-                .filter(a -> isRead(a, userId))
+    public List<Map<String, Object>> getUserAnnouncements(Long userId, boolean isRead) {
+        List<Announcement> announcements = findAllVisible();
+        
+        // 根据已读状态过滤公告
+        List<Announcement> filteredAnnouncements = announcements.stream()
+                .filter(a -> isRead == isRead(a, userId))
                 .collect(Collectors.toList());
+        
+        // 转换为Map列表，添加额外信息
+        return filteredAnnouncements.stream().map(a -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", a.getId());
+            map.put("title", a.getTitle());
+            map.put("content", a.getContent());
+            map.put("publisherId", a.getPublisherId());
+            map.put("status", a.getStatus());
+            map.put("createTime", a.getCreateTime());
+            map.put("updateTime", a.getUpdateTime());
+            return map;
+        }).collect(Collectors.toList());
     }
     
     /**

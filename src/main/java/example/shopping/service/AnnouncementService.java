@@ -12,6 +12,25 @@ import java.util.Map;
 public interface AnnouncementService {
     
     /**
+     * 获取所有公告
+     * @return 公告列表
+     */
+    List<Announcement> findAll();
+    
+    /**
+     * 获取所有显示状态的公告
+     * @return 公告列表
+     */
+    List<Announcement> findAllVisible();
+    
+    /**
+     * 根据ID获取公告
+     * @param id 公告ID
+     * @return 公告信息
+     */
+    Announcement findById(Long id);
+    
+    /**
      * 添加公告
      * @param publisherId 发布者ID
      * @param announcementDTO 公告信息
@@ -28,33 +47,6 @@ public interface AnnouncementService {
     Announcement update(Long id, AnnouncementDTO announcementDTO);
     
     /**
-     * 根据ID查询公告
-     * @param id 公告ID
-     * @return 公告信息
-     */
-    Announcement findById(Long id);
-    
-    /**
-     * 查询所有公告
-     * @return 公告列表
-     */
-    List<Announcement> findAll();
-    
-    /**
-     * 查询显示中的公告
-     * @return 公告列表
-     */
-    List<Announcement> findVisible();
-    
-    /**
-     * 分页查询公告
-     * @param pageNum 页码
-     * @param pageSize 每页大小
-     * @return 包含分页信息的公告列表
-     */
-    Map<String, Object> findByPage(int pageNum, int pageSize);
-    
-    /**
      * 删除公告
      * @param id 公告ID
      * @return 是否删除成功
@@ -64,7 +56,7 @@ public interface AnnouncementService {
     /**
      * 更新公告状态
      * @param id 公告ID
-     * @param status 状态(0-隐藏, 1-显示)
+     * @param status 状态
      * @return 是否更新成功
      */
     boolean updateStatus(Long id, Integer status);
@@ -78,16 +70,17 @@ public interface AnnouncementService {
     boolean markAsRead(Long id, Long userId);
     
     /**
-     * 查询用户未读公告
+     * 获取用户未读公告数量
      * @param userId 用户ID
-     * @return 未读公告列表
+     * @return 未读公告数量
      */
-    List<Announcement> findUnreadByUserId(Long userId);
+    int getUnreadCount(Long userId);
     
     /**
-     * 查询用户已读公告
+     * 获取用户已读/未读公告列表
      * @param userId 用户ID
-     * @return 已读公告列表
+     * @param isRead 是否已读
+     * @return 公告列表
      */
-    List<Announcement> findReadByUserId(Long userId);
+    List<Map<String, Object>> getUserAnnouncements(Long userId, boolean isRead);
 } 

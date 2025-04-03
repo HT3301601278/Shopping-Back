@@ -130,6 +130,20 @@ public class StoreServiceImpl implements StoreService {
             throw new BusinessException("状态值无效");
         }
         
+        // 当店铺审核通过时，将用户角色更新为商家
+        if (status == 1 && store.getStatus() != 1) {
+            // 获取店铺所有者
+            User storeOwner = userMapper.findById(store.getUserId());
+            if (storeOwner != null && "ROLE_USER".equals(storeOwner.getRole())) {
+                // 更新用户角色为商家
+                User updateUser = new User();
+                updateUser.setId(storeOwner.getId());
+                updateUser.setRole("ROLE_MERCHANT");
+                updateUser.setUpdateTime(new Date());
+                userMapper.update(updateUser);
+            }
+        }
+        
         return storeMapper.updateStatus(id, status) > 0;
     }
 

@@ -32,6 +32,8 @@ public class DataInitializer {
             TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
             transactionTemplate.execute(status -> {
                 createAdminIfNotExists();
+                createMerchantIfNotExists();
+                createUserIfNotExists();
                 return null;
             });
         };
@@ -49,14 +51,60 @@ public class DataInitializer {
         // 如果不存在，则创建
         if (count == 0) {
             User admin = new User();
-            admin.setUsername("admin");
-            admin.setPassword("admin123");
-            admin.setPhone("13800000000");
+            admin.setUsername("111");
+            admin.setPassword("111");
+            admin.setPhone("13500000000");
             admin.setRole("ROLE_ADMIN");
             admin.setStatus(1);
 
             entityManager.persist(admin);
             System.out.println("管理员账户已创建，用户名：admin，密码：admin123");
+        }
+    }
+
+    /**
+     * 创建商家账户（如果不存在）
+     */
+    public void createMerchantIfNotExists() {
+        // 查询是否已存在商家账户
+        Long count = (Long) entityManager
+                .createQuery("SELECT COUNT(u) FROM User u WHERE u.role = 'ROLE_MERCHANT'")
+                .getSingleResult();
+
+        // 如果不存在，则创建
+        if (count == 0) {
+            User merchant = new User();
+            merchant.setUsername("222");
+            merchant.setPassword("222");
+            merchant.setPhone("13600000000");
+            merchant.setRole("ROLE_MERCHANT");
+            merchant.setStatus(1);
+
+            entityManager.persist(merchant);
+            System.out.println("商家账户已创建，用户名：merchant，密码：merchant123");
+        }
+    }
+
+    /**
+     * 创建普通用户账户（如果不存在）
+     */
+    public void createUserIfNotExists() {
+        // 查询是否已存在普通用户账户
+        Long count = (Long) entityManager
+                .createQuery("SELECT COUNT(u) FROM User u WHERE u.role = 'ROLE_USER'")
+                .getSingleResult();
+
+        // 如果不存在，则创建
+        if (count == 0) {
+            User user = new User();
+            user.setUsername("333");
+            user.setPassword("333");
+            user.setPhone("13700000000");
+            user.setRole("ROLE_USER");
+            user.setStatus(1);
+
+            entityManager.persist(user);
+            System.out.println("普通用户账户已创建，用户名：user，密码：user123");
         }
     }
 }

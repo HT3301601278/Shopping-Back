@@ -110,7 +110,7 @@ CREATE TABLE `customer_service_sessions`  (
   `start_time` datetime(6) NOT NULL COMMENT '会话开始时间',
   `end_time` datetime(6) NULL DEFAULT NULL COMMENT '会话结束时间',
   `evaluation` int(11) NULL DEFAULT NULL COMMENT '用户服务评价：1-5星',
-  `complaint_status` int(11) NULL DEFAULT NULL COMMENT '投诉状态：0-无投诉，1-投诉中，2-已处理',
+  `complaint_status` int(11) NULL DEFAULT NULL COMMENT '投诉状态：0-待处理，1-已处理，2-已驳回',
   `remark` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '用户评价备注',
   `complaint_result` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '投诉处理结果说明',
   `is_penalty` bit(1) NULL DEFAULT NULL COMMENT '是否处罚商家：0-否，1-是',
@@ -219,7 +219,7 @@ DROP TABLE IF EXISTS `stores`;
 CREATE TABLE `stores`  (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '店铺ID，唯一标识',
   `user_id` bigint(20) NOT NULL COMMENT '店主用户ID，关联users表',
-  `status` int(11) NOT NULL COMMENT '店铺状态：0-审核中，1-正常营业，2-已关闭',
+  `status` int(11) NOT NULL COMMENT '店铺状态：0-审核中，1-正常，2-关闭',
   `name` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '店铺名称',
   `logo` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '店铺LOGO图片URL',
   `description` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '店铺简介描述',
@@ -236,7 +236,7 @@ CREATE TABLE `stores`  (
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users`  (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '用户ID，系统自动生成的唯一标识',
-  `status` int(11) NOT NULL COMMENT '账号状态：0-禁用，1-正常',
+  `status` int(11) NOT NULL COMMENT '账号状态：0-禁用，1-启用',
   `username` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '用户名，用于登录和显示，唯一',
   `password` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '密码',
   `phone` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '手机号码，用于账号验证和找回密码，唯一',

@@ -33,65 +33,67 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initData() {
         return args -> {
-            TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
-            transactionTemplate.execute(status -> {
-                try {
-                    // 初始化用户（需要最先创建）
-                    createAdminIfNotExists();
-                    createMerchantIfNotExists();
-                    createUserIfNotExists();
+            // TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+            // transactionTemplate.execute(status -> {
+            //     try {
+            //         // 初始化用户（需要最先创建）
+            //         createAdminIfNotExists();
+            //         createMerchantIfNotExists();
+            //         createUserIfNotExists();
 
-                    // 在用户创建完成后，创建相关表
-                    createCategoriesIfNotExists();
-                    createStoresIfNotExists();
-                    createProductsIfNotExists();
-                    createOrdersIfNotExists();
-                    createReviewsIfNotExists();
+            //         // 在用户创建完成后，创建相关表
+            //         createCategoriesIfNotExists();
+            //         createStoresIfNotExists();
+            //         createProductsIfNotExists();
+            //         createOrdersIfNotExists();
+            //         createReviewsIfNotExists();
 
-                    try {
-                        // 单独处理公告和地址，避免因某个实体未映射导致整个事务回滚
-                        createAnnouncementsIfNotExists();
-                    } catch (Exception e) {
-                        System.out.println("创建公告时发生错误，可能是实体未映射: " + e.getMessage());
-                    }
+            //         try {
+            //             // 单独处理公告和地址，避免因某个实体未映射导致整个事务回滚
+            //             createAnnouncementsIfNotExists();
+            //         } catch (Exception e) {
+            //             System.out.println("创建公告时发生错误，可能是实体未映射: " + e.getMessage());
+            //         }
 
-                    try {
-                        createAddressesIfNotExists();
-                    } catch (Exception e) {
-                        System.out.println("创建地址时发生错误: " + e.getMessage());
-                    }
+            //         try {
+            //             createAddressesIfNotExists();
+            //         } catch (Exception e) {
+            //             System.out.println("创建地址时发生错误: " + e.getMessage());
+            //         }
 
-                    // 创建购物车、收藏、搜索历史、客服会话和客服消息数据
-                    try {
-                        createCartsIfNotExists();
-                    } catch (Exception e) {
-                        System.out.println("创建购物车数据时发生错误: " + e.getMessage());
-                    }
+            //         // 创建购物车、收藏、搜索历史、客服会话和客服消息数据
+            //         try {
+            //             createCartsIfNotExists();
+            //         } catch (Exception e) {
+            //             System.out.println("创建购物车数据时发生错误: " + e.getMessage());
+            //         }
 
-                    try {
-                        createFavoritesIfNotExists();
-                    } catch (Exception e) {
-                        System.out.println("创建收藏数据时发生错误: " + e.getMessage());
-                    }
+            //         try {
+            //             createFavoritesIfNotExists();
+            //         } catch (Exception e) {
+            //             System.out.println("创建收藏数据时发生错误: " + e.getMessage());
+            //         }
 
-                    try {
-                        createSearchHistoriesIfNotExists();
-                    } catch (Exception e) {
-                        System.out.println("创建搜索历史数据时发生错误: " + e.getMessage());
-                    }
+            //         try {
+            //             createSearchHistoriesIfNotExists();
+            //         } catch (Exception e) {
+            //             System.out.println("创建搜索历史数据时发生错误: " + e.getMessage());
+            //         }
 
-                    try {
-                        createCustomerServiceSessionsIfNotExists();
-                    } catch (Exception e) {
-                        System.out.println("创建客服会话数据时发生错误: " + e.getMessage());
-                    }
+            //         try {
+            //             createCustomerServiceSessionsIfNotExists();
+            //         } catch (Exception e) {
+            //             System.out.println("创建客服会话数据时发生错误: " + e.getMessage());
+            //         }
 
-                } catch (Exception e) {
-                    System.out.println("初始化数据时发生错误: " + e.getMessage());
-                    e.printStackTrace();
-                }
-                return null;
-            });
+            //     } catch (Exception e) {
+            //         System.out.println("初始化数据时发生错误: " + e.getMessage());
+            //         e.printStackTrace();
+            //     }
+            //     return null;
+            // });
+            // 暂时取消数据初始化
+            System.out.println("数据初始化已被禁用");
         };
     }
 

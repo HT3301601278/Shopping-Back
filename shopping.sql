@@ -34,7 +34,7 @@ CREATE TABLE `addresses`  (
   `create_time` datetime NULL DEFAULT NULL COMMENT '地址创建时间',
   `update_time` datetime NULL DEFAULT NULL COMMENT '地址更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '收货地址表，存储用户的收货地址信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '收货地址表，存储用户的收货地址信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for announcements
@@ -50,7 +50,7 @@ CREATE TABLE `announcements`  (
   `create_time` datetime NULL DEFAULT NULL COMMENT '发布时间',
   `update_time` datetime NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '公告表，存储系统公告信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '公告表，存储系统公告信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for carts
@@ -65,7 +65,7 @@ CREATE TABLE `carts`  (
   `spec_info` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '选择的商品规格信息，JSON格式存储',
   `create_time` datetime NULL DEFAULT NULL COMMENT '加入购物车时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '购物车表，存储用户的购物车信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '购物车表，存储用户的购物车信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for categories
@@ -79,7 +79,7 @@ CREATE TABLE `categories`  (
   `status` int(11) NOT NULL COMMENT '分类状态：0-禁用，1-启用',
   `sort_order` int(11) NULL DEFAULT NULL COMMENT '同级分类的排序值，值越小越靠前',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 26 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品分类表，存储商品的分类体系' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品分类表，存储商品的分类体系' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for customer_service_messages
@@ -96,7 +96,7 @@ CREATE TABLE `customer_service_messages`  (
   `read_status` bit(1) NOT NULL COMMENT '读取状态：0-未读，1-已读',
   `create_time` datetime NULL DEFAULT NULL COMMENT '发送时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 23 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '客服消息表，记录用户与客服的聊天记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '客服消息表，记录用户与客服的聊天记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for customer_service_sessions
@@ -118,7 +118,7 @@ CREATE TABLE `customer_service_sessions`  (
   `create_time` datetime NULL DEFAULT NULL COMMENT '记录创建时间',
   `update_time` datetime NULL DEFAULT NULL COMMENT '记录更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '客服会话表，记录用户与客服的会话信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '客服会话表，记录用户与客服的会话信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for favorites
@@ -130,7 +130,7 @@ CREATE TABLE `favorites`  (
   `product_id` bigint(20) NOT NULL COMMENT '商品ID，关联products表',
   `create_time` datetime NULL DEFAULT NULL COMMENT '收藏时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '收藏表，存储用户收藏的商品' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '收藏表，存储用户收藏的商品' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for orders
@@ -154,7 +154,7 @@ CREATE TABLE `orders`  (
   `update_time` datetime NULL DEFAULT NULL COMMENT '订单更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `UK_order_no`(`order_no`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '订单表，存储用户订单信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '订单表，存储用户订单信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for products
@@ -177,7 +177,7 @@ CREATE TABLE `products`  (
   `create_time` datetime NULL DEFAULT NULL COMMENT '商品创建时间',
   `update_time` datetime NULL DEFAULT NULL COMMENT '商品信息更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品表，存储商品的基本信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品表，存储商品的基本信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for reviews
@@ -197,7 +197,7 @@ CREATE TABLE `reviews`  (
   `create_time` datetime NULL DEFAULT NULL COMMENT '评价创建时间',
   `update_time` datetime NULL DEFAULT NULL COMMENT '评价更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品评价表，存储用户对商品的评价信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '商品评价表，存储用户对商品的评价信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for search_histories
@@ -210,7 +210,7 @@ CREATE TABLE `search_histories`  (
   `result_count` int(8) NULL DEFAULT NULL COMMENT '搜索结果数量',
   `create_time` datetime NULL DEFAULT NULL COMMENT '搜索时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 23 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '搜索历史表，记录用户的搜索记录' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '搜索历史表，记录用户的搜索记录' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for stores
@@ -228,7 +228,7 @@ CREATE TABLE `stores`  (
   `create_time` datetime NULL DEFAULT NULL COMMENT '店铺创建时间',
   `update_time` datetime NULL DEFAULT NULL COMMENT '店铺信息更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '店铺表，存储商家店铺的基本信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '店铺表，存储商家店铺的基本信息' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for users
@@ -248,6 +248,6 @@ CREATE TABLE `users`  (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `UK_username`(`username`) USING BTREE,
   UNIQUE INDEX `UK_phone`(`phone`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户信息表，存储系统用户的基本信息' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户信息表，存储系统用户的基本信息' ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;

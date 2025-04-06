@@ -6,7 +6,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -617,12 +616,12 @@ public class DataInitializer {
         java.util.List<User> users = entityManager
                 .createQuery("SELECT u FROM User u WHERE u.role = 'ROLE_USER'")
                 .getResultList();
-                
+
         if (users.isEmpty()) {
             System.out.println("没有找到普通用户，无法创建收货地址");
             return;
         }
-        
+
         // 省份和城市
         String[][] locations = {
             {"北京市", "朝阳区"},
@@ -631,27 +630,27 @@ public class DataInitializer {
             {"浙江省", "杭州市西湖区"},
             {"四川省", "成都市武侯区"}
         };
-        
+
         // 检查Address表中是否已有数据
         Long addressCount = (Long) entityManager
                 .createQuery("SELECT COUNT(a) FROM Address a")
                 .getSingleResult();
-                
+
         if (addressCount == 0) {
             System.out.println("开始创建Address表数据...");
-            
+
             Random random = new Random();
-            
+
             for (User user : users) {
                 try {
                     // 为每个用户创建1-3个收货地址
                     int userAddressCount = 1 + random.nextInt(2);
-                    
+
                     for (int i = 0; i < userAddressCount; i++) {
                         String[] location = locations[random.nextInt(locations.length)];
                         String province = location[0];
                         String city = location[1];
-                        
+
                         Address address = new Address();
                         address.setUserId(user.getId());
                         address.setReceiverName(user.getUsername());
@@ -659,42 +658,42 @@ public class DataInitializer {
                         address.setProvince(province);
                         address.setCity(city);
                         address.setDistrict("某某小区");
-                        
+
                         // 生成详细地址
-                        String detailAddress = (random.nextInt(100) + 1) + "号楼" + 
-                                             (random.nextInt(10) + 1) + "0" + 
+                        String detailAddress = (random.nextInt(100) + 1) + "号楼" +
+                                             (random.nextInt(10) + 1) + "0" +
                                              (random.nextInt(9) + 1) + "室";
                         address.setDetailAddress(detailAddress);
-                        
+
                         // 第一个地址设为默认
                         address.setIsDefault(i == 0);
-                        
+
                         entityManager.persist(address);
                     }
                 } catch (Exception e) {
                     System.out.println("为用户" + user.getId() + "创建地址时发生错误: " + e.getMessage());
                 }
             }
-            
+
             System.out.println("Address表数据创建完成");
         }
-        
+
         for (User user : users) {
             try {
                 // 检查用户是否已有地址
                 if (user.getAddresses() == null || user.getAddresses().isEmpty()) {
                     StringBuilder addressJson = new StringBuilder("[");
-                    
+
                     // 为每个用户创建1-3个收货地址
                     int userJsonAddressCount = 1 + (int)(Math.random() * 2);
-                    
+
                     for (int i = 0; i < userJsonAddressCount; i++) {
                         String[] location = locations[(int)(Math.random() * locations.length)];
                         String province = location[0];
                         String city = location[1];
-                        
+
                         if (i > 0) addressJson.append(",");
-                        
+
                         addressJson.append("{")
                                   .append("\"name\":\"").append(user.getUsername()).append("\",")
                                   .append("\"phone\":\"").append(user.getPhone()).append("\",")
@@ -705,9 +704,9 @@ public class DataInitializer {
                                   .append("\"isDefault\":").append(i == 0 ? "true" : "false")
                                   .append("}");
                     }
-                    
+
                     addressJson.append("]");
-                    
+
                     user.setAddresses(addressJson.toString());
                     entityManager.merge(user);
                 }
@@ -715,7 +714,7 @@ public class DataInitializer {
                 System.out.println("创建用户地址时发生错误: " + e.getMessage());
             }
         }
-        
+
         System.out.println("用户收货地址数据已创建");
     }
 

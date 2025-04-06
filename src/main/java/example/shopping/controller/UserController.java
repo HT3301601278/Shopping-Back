@@ -1,6 +1,7 @@
 package example.shopping.controller;
 
 import example.shopping.dto.PasswordDTO;
+import example.shopping.dto.UserProfileDTO;
 import example.shopping.entity.User;
 import example.shopping.service.UserService;
 import example.shopping.utils.Result;
@@ -34,6 +35,19 @@ public class UserController {
         User user = userService.findById(userId);
         user.setPassword(null); // 不返回密码
         return Result.success(user);
+    }
+
+    /**
+     * 更新用户个人信息
+     * @param userProfileDTO 用户个人信息
+     * @return 更新后的用户信息
+     */
+    @PutMapping("/profile")
+    public Result<User> updateUserProfile(@Valid @RequestBody UserProfileDTO userProfileDTO) {
+        Long userId = getCurrentUserId();
+        User updatedUser = userService.updateProfile(userId, userProfileDTO);
+        updatedUser.setPassword(null); // 不返回密码
+        return Result.success(updatedUser, "个人信息更新成功");
     }
 
     /**

@@ -2,6 +2,7 @@ package example.shopping.service.impl;
 
 import example.shopping.dto.LoginDTO;
 import example.shopping.dto.RegisterDTO;
+import example.shopping.dto.UserProfileDTO;
 import example.shopping.entity.User;
 import example.shopping.exception.BusinessException;
 import example.shopping.mapper.UserMapper;
@@ -146,5 +147,43 @@ public class UserServiceImpl implements UserService {
         updateUser.setUpdateTime(new Date());
         
         return userMapper.update(updateUser) > 0;
+    }
+
+    @Override
+    @Transactional
+    public User updateProfile(Long userId, UserProfileDTO userProfileDTO) {
+        User existingUser = userMapper.findById(userId);
+        if (existingUser == null) {
+            throw new BusinessException("用户不存在");
+        }
+
+        // 检查用户名是否已被其他用户使用
+        if (!existingUser.getUsername().equals(userProfileDTO.getUsername())) {
+            User userByUsername = userMapper.findByUsername(userProfileDTO.getUsername());
+            if (userByUsername != null && !userByUsername.getId().equals(userId)) {
+                throw new BusinessException("用户名已被使用");
+            }
+        }
+
+        // 检查手机号是否已被其他用户使用
+        if (!existingUser.getPhone().equals(userProfileDTO.getPhone())) {
+            User userByPhone = userMapper.findByPhone(userProfileDTO.getPhone());
+            if (userByPhone != null && !userByPhone.getId().equals(userId)) {
+                throw new BusinessException("手机号已被使用");
+            }
+        }
+
+        // 更新用户信息
+        User updateUser = new User();
+        updateUser.setId(userId);
+        updateUser.setUsername(userProfileDTO.getUsername());
+        updateUser.setPhone(userProfileDTO.getPhone());
+        updateUser.setAvatar(userProfileDTO.getAvatar());
+        updateUser.setAddresses(userProfileDTO.getAddresses());
+        updateUser.setUpdateTime(new Date());
+
+        userMapper.update(updateUser);
+        
+        return userMapper.findById(userId);
     }
 } 

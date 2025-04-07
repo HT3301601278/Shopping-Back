@@ -5,7 +5,7 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 
 /**
- * 搜索历史DTO
+ * 搜索历史数据传输对象
  */
 @Data
 public class SearchHistoryDTO {

@@ -17,7 +17,7 @@ public interface SearchHistoryMapper {
      * @param userId 用户ID
      * @return 搜索历史列表
      */
-    @Select("SELECT * FROM search_history WHERE user_id = #{userId} ORDER BY create_time DESC")
+    @Select("SELECT * FROM search_histories WHERE user_id = #{userId} ORDER BY create_time DESC")
     List<SearchHistory> findByUserId(Long userId);
     
     /**
@@ -27,7 +27,7 @@ public interface SearchHistoryMapper {
      * @param limit 数量限制
      * @return 搜索历史列表
      */
-    @Select("SELECT * FROM search_history WHERE user_id = #{userId} ORDER BY create_time DESC LIMIT #{offset}, #{limit}")
+    @Select("SELECT * FROM search_histories WHERE user_id = #{userId} ORDER BY create_time DESC LIMIT #{offset}, #{limit}")
     List<SearchHistory> findByUserIdWithPage(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
     
     /**
@@ -35,7 +35,7 @@ public interface SearchHistoryMapper {
      * @param userId 用户ID
      * @return 关键词列表
      */
-    @Select("SELECT DISTINCT keyword FROM search_history WHERE user_id = #{userId} ORDER BY create_time DESC")
+    @Select("SELECT DISTINCT keyword FROM search_histories WHERE user_id = #{userId} ORDER BY create_time DESC")
     List<String> findKeywordsByUserId(Long userId);
     
     /**
@@ -43,7 +43,7 @@ public interface SearchHistoryMapper {
      * @param searchHistory 搜索历史信息
      * @return 影响行数
      */
-    @Insert("INSERT INTO search_history(user_id, keyword, result_count, create_time) VALUES(#{userId}, #{keyword}, #{resultCount}, #{createTime})")
+    @Insert("INSERT INTO search_histories(user_id, keyword, result_count, create_time) VALUES(#{userId}, #{keyword}, #{resultCount}, #{createTime})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(SearchHistory searchHistory);
     
@@ -52,7 +52,7 @@ public interface SearchHistoryMapper {
      * @param id 搜索历史ID
      * @return 影响行数
      */
-    @Delete("DELETE FROM search_history WHERE id = #{id}")
+    @Delete("DELETE FROM search_histories WHERE id = #{id}")
     int deleteById(Long id);
     
     /**
@@ -60,7 +60,7 @@ public interface SearchHistoryMapper {
      * @param userId 用户ID
      * @return 影响行数
      */
-    @Delete("DELETE FROM search_history WHERE user_id = #{userId}")
+    @Delete("DELETE FROM search_histories WHERE user_id = #{userId}")
     int deleteByUserId(Long userId);
     
     /**
@@ -68,6 +68,6 @@ public interface SearchHistoryMapper {
      * @param limit 数量限制
      * @return 热门搜索词列表
      */
-    @Select("SELECT keyword, COUNT(*) as count FROM search_history GROUP BY keyword ORDER BY count DESC LIMIT #{limit}")
+    @Select("SELECT keyword, COUNT(*) as count FROM search_histories GROUP BY keyword ORDER BY count DESC LIMIT #{limit}")
     List<Map<String, Object>> findHotKeywords(int limit);
 } 

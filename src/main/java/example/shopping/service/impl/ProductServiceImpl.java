@@ -6,7 +6,12 @@ import example.shopping.exception.BusinessException;
 import example.shopping.mapper.ProductMapper;
 import example.shopping.service.ProductService;
 import example.shopping.service.StoreService;
+import example.shopping.service.SearchHistoryService;
+import example.shopping.dto.SearchHistoryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +31,9 @@ public class ProductServiceImpl implements ProductService {
     
     @Autowired
     private StoreService storeService;
+
+    @Autowired
+    private SearchHistoryService searchHistoryService;
 
     @Override
     public List<Product> findAll() {
@@ -160,7 +168,22 @@ public class ProductServiceImpl implements ProductService {
             throw new BusinessException("搜索关键字不能为空");
         }
         
-        return productMapper.search(keyword);
+        List<Product> products = productMapper.search(keyword);
+        
+        // 获取当前登录用户ID（需要从SecurityContext中获取）
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            Long userId = Long.parseLong(userDetails.getUsername());
+            
+            // 保存搜索历史
+            SearchHistoryDTO searchHistoryDTO = new SearchHistoryDTO();
+            searchHistoryDTO.setKeyword(keyword);
+            searchHistoryDTO.setResultCount(products.size());
+            searchHistoryService.add(userId, searchHistoryDTO);
+        }
+        
+        return products;
     }
 
     @Override

@@ -2,11 +2,14 @@ package example.shopping.service.impl;
 
 import example.shopping.entity.Product;
 import example.shopping.entity.Store;
+import example.shopping.entity.User;
+import example.shopping.entity.SearchHistory;
 import example.shopping.exception.BusinessException;
 import example.shopping.mapper.ProductMapper;
 import example.shopping.service.ProductService;
 import example.shopping.service.StoreService;
 import example.shopping.service.SearchHistoryService;
+import example.shopping.service.UserService;
 import example.shopping.dto.SearchHistoryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -34,6 +37,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private SearchHistoryService searchHistoryService;
+    
+    @Autowired
+    private UserService userService;
 
     @Override
     public List<Product> findAll() {
@@ -170,17 +176,20 @@ public class ProductServiceImpl implements ProductService {
         
         List<Product> products = productMapper.search(keyword);
         
-        // 获取当前登录用户ID（需要从SecurityContext中获取）
+        // 获取当前登录用户ID
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            Long userId = Long.parseLong(userDetails.getUsername());
+            String username = userDetails.getUsername();
             
-            // 保存搜索历史
-            SearchHistoryDTO searchHistoryDTO = new SearchHistoryDTO();
-            searchHistoryDTO.setKeyword(keyword);
-            searchHistoryDTO.setResultCount(products.size());
-            searchHistoryService.add(userId, searchHistoryDTO);
+            User user = userService.findByUsername(username);
+            if (user != null) {
+                // 保存搜索历史
+                SearchHistoryDTO searchHistoryDTO = new SearchHistoryDTO();
+                searchHistoryDTO.setKeyword(keyword);
+                searchHistoryDTO.setResultCount(products.size());
+                searchHistoryService.add(user.getId(), searchHistoryDTO);
+            }
         }
         
         return products;

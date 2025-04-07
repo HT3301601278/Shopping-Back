@@ -33,14 +33,21 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
         searchHistory.setResultCount(searchHistoryDTO.getResultCount());
         searchHistory.setCreateTime(new Date());
         
-        searchHistoryMapper.insert(searchHistory);
-        
-        return searchHistory;
+        try {
+            int result = searchHistoryMapper.insert(searchHistory);
+            return result > 0 ? searchHistory : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
     public List<SearchHistory> findByUserId(Long userId) {
-        return searchHistoryMapper.findByUserId(userId);
+        try {
+            return searchHistoryMapper.findByUserId(userId);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     @Override
@@ -49,17 +56,21 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
             limit = 10; // 默认返回10个
         }
         
-        // 获取所有搜索历史并按时间排序
-        List<SearchHistory> allHistories = searchHistoryMapper.findByUserId(userId);
-        
-        // 按创建时间倒序排序
-        allHistories.sort(Comparator.comparing(SearchHistory::getCreateTime).reversed());
-        
-        // 返回前limit条记录
-        if (allHistories.size() <= limit) {
-            return allHistories;
-        } else {
-            return allHistories.subList(0, limit);
+        try {
+            // 获取所有搜索历史并按时间排序
+            List<SearchHistory> allHistories = searchHistoryMapper.findByUserId(userId);
+            
+            // 按创建时间倒序排序
+            allHistories.sort(Comparator.comparing(SearchHistory::getCreateTime).reversed());
+            
+            // 返回前limit条记录
+            if (allHistories.size() <= limit) {
+                return allHistories;
+            } else {
+                return allHistories.subList(0, limit);
+            }
+        } catch (Exception e) {
+            return new ArrayList<>();
         }
     }
 

@@ -1,9 +1,11 @@
 package example.shopping.service.impl;
 
 import example.shopping.entity.Product;
+import example.shopping.entity.Store;
 import example.shopping.exception.BusinessException;
 import example.shopping.mapper.ProductMapper;
 import example.shopping.service.ProductService;
+import example.shopping.service.StoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductMapper productMapper;
+    
+    @Autowired
+    private StoreService storeService;
 
     @Override
     public List<Product> findAll() {
@@ -59,6 +64,18 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public Product add(Product product) {
+        // 检查店铺状态
+        Store store = storeService.findById(product.getStoreId());
+        if (store == null) {
+            throw new BusinessException("店铺不存在");
+        }
+        
+        // 检查店铺审核状态
+        if (store.getStatus() != 1) {
+            String message = store.getStatus() == 0 ? "店铺正在审核中" : "店铺已关闭";
+            throw new BusinessException(message + "，无法添加商品");
+        }
+        
         // 设置默认值
         if (product.getStatus() == null) {
             product.setStatus(1); // 1-上架

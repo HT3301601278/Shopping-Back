@@ -54,8 +54,47 @@ public class CartServiceImpl implements CartService {
             throw new BusinessException("商品库存不足");
         }
 
-        // 检查是否已经添加过该商品
-        Cart existingCart = cartMapper.findByUserIdAndProductId(userId, cartDTO.getProductId());
+        // 验证规格信息
+        if (cartDTO.getSpecInfo() != null) {
+            try {
+                // 解析商品规格信息
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                java.util.Map<String, java.util.List<String>> specifications = 
+                    mapper.readValue(product.getSpecifications(), new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, java.util.List<String>>>() {});
+                
+                // 验证规格是否合法
+                for (Map.Entry<String, String> entry : cartDTO.getSpecInfo().entrySet()) {
+                    String specName = entry.getKey();
+                    String specValue = entry.getValue();
+                    
+                    // 检查规格名称是否存在
+                    if (!specifications.containsKey(specName)) {
+                        throw new BusinessException("无效的规格名称：" + specName);
+                    }
+                    
+                    // 检查规格值是否有效
+                    if (!specifications.get(specName).contains(specValue)) {
+                        throw new BusinessException("无效的规格值：" + specValue);
+                    }
+                }
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                throw new BusinessException("规格信息格式错误");
+            }
+        }
+
+        // 将规格信息转换为JSON字符串
+        String specInfoJson = null;
+        if (cartDTO.getSpecInfo() != null) {
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                specInfoJson = mapper.writeValueAsString(cartDTO.getSpecInfo());
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                throw new BusinessException("规格信息转换失败");
+            }
+        }
+
+        // 检查是否已经添加过该商品（相同规格）
+        Cart existingCart = cartMapper.findByUserIdAndProductIdAndSpecInfo(userId, cartDTO.getProductId(), specInfoJson);
         if (existingCart != null) {
             // 如果已经添加过，则更新数量
             int newQuantity = existingCart.getQuantity() + cartDTO.getQuantity();
@@ -66,7 +105,6 @@ public class CartServiceImpl implements CartService {
             }
 
             existingCart.setQuantity(newQuantity);
-            existingCart.setSpecInfo(cartDTO.getSpecInfo());
             cartMapper.update(existingCart);
             return existingCart;
         } else {
@@ -74,7 +112,7 @@ public class CartServiceImpl implements CartService {
             Cart cart = new Cart();
             cart.setUserId(userId);
             cart.setProductId(cartDTO.getProductId());
-            cart.setSpecInfo(cartDTO.getSpecInfo());
+            cart.setSpecInfo(specInfoJson);
             cart.setQuantity(cartDTO.getQuantity());
             cart.setSelected(true);
             cart.setCreateTime(new Date());

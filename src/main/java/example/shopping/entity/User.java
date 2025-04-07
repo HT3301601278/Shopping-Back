@@ -22,6 +22,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(length = 50)
+    private String name;  // 用户真实姓名
+
     @Column(nullable = false, unique = true)
     private String phone;
 

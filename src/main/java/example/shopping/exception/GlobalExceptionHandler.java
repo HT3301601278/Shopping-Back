@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public Result<Void> handleAuthenticationException(Exception e) {
         log.error("认证异常: {}", e.getMessage());
-        return Result.error(401, "用户名或密码错误");
+        return Result.error(401, "无效的用户凭证");
     }
 
     /**
@@ -99,7 +99,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Result<Void> handleException(Exception e) {
-        log.error("系统异常", e);
-        return Result.error(500, "服务器内部错误，请联系管理员");
+        // 记录完整异常信息到日志，但向客户端返回简洁信息
+        log.error("系统异常: {}", e.getMessage(), e);
+        return Result.error(500, "服务器内部错误");
     }
 } 

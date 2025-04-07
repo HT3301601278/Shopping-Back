@@ -40,8 +40,8 @@ public interface UserMapper {
      * @param user 用户对象
      * @return 影响行数
      */
-    @Insert("INSERT INTO users(username, password, phone, avatar, role, status, addresses, create_time, update_time) " +
-            "VALUES(#{username}, #{password}, #{phone}, #{avatar}, #{role}, #{status}, #{addresses}, #{createTime}, #{updateTime})")
+    @Insert("INSERT INTO users(username, password, phone, name, avatar, role, status, addresses, create_time, update_time) " +
+            "VALUES(#{username}, #{password}, #{phone}, #{name}, #{avatar}, #{role}, #{status}, #{addresses}, #{createTime}, #{updateTime})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(User user);
     
@@ -55,6 +55,7 @@ public interface UserMapper {
             "<set>" +
             "<if test='password != null'>password = #{password},</if>" +
             "<if test='phone != null'>phone = #{phone},</if>" +
+            "<if test='name != null'>name = #{name},</if>" +
             "<if test='avatar != null'>avatar = #{avatar},</if>" +
             "<if test='role != null'>role = #{role},</if>" +
             "<if test='status != null'>status = #{status},</if>" +

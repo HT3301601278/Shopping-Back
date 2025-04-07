@@ -157,14 +157,6 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("用户不存在");
         }
 
-        // 检查用户名是否已被其他用户使用
-        if (!existingUser.getUsername().equals(userProfileDTO.getUsername())) {
-            User userByUsername = userMapper.findByUsername(userProfileDTO.getUsername());
-            if (userByUsername != null && !userByUsername.getId().equals(userId)) {
-                throw new BusinessException("用户名已被使用");
-            }
-        }
-
         // 检查手机号是否已被其他用户使用
         if (!existingUser.getPhone().equals(userProfileDTO.getPhone())) {
             User userByPhone = userMapper.findByPhone(userProfileDTO.getPhone());
@@ -176,8 +168,8 @@ public class UserServiceImpl implements UserService {
         // 更新用户信息
         User updateUser = new User();
         updateUser.setId(userId);
-        updateUser.setUsername(userProfileDTO.getUsername());
         updateUser.setPhone(userProfileDTO.getPhone());
+        updateUser.setName(userProfileDTO.getName());
         updateUser.setAvatar(userProfileDTO.getAvatar());
         updateUser.setAddresses(userProfileDTO.getAddresses());
         updateUser.setUpdateTime(new Date());

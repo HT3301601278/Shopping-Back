@@ -12,9 +12,8 @@ import javax.validation.constraints.Size;
 @Data
 public class UserProfileDTO {
     
-    @NotBlank(message = "用户名不能为空")
-    @Size(min = 4, max = 20, message = "用户名长度必须在4-20个字符之间")
-    private String username;
+    @Size(max = 50, message = "姓名长度不能超过50个字符")
+    private String name;
     
     @NotBlank(message = "手机号不能为空")
     @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")

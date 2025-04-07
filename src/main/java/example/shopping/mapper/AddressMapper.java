@@ -1,8 +1,7 @@
 package example.shopping.mapper;
 
 import example.shopping.entity.Address;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -17,6 +16,11 @@ public interface AddressMapper {
      * @param address 地址信息
      * @return 影响行数
      */
+    @Insert("INSERT INTO addresses(user_id, receiver_name, receiver_phone, province, city, district, " +
+            "detail_address, is_default, create_time, update_time) " +
+            "VALUES(#{userId}, #{receiverName}, #{receiverPhone}, #{province}, #{city}, #{district}, " +
+            "#{detailAddress}, #{isDefault}, #{createTime}, #{updateTime})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Address address);
     
     /**
@@ -24,6 +28,20 @@ public interface AddressMapper {
      * @param address 地址信息
      * @return 影响行数
      */
+    @Update("<script>" +
+            "UPDATE addresses " +
+            "<set>" +
+            "<if test='receiverName != null'>receiver_name = #{receiverName},</if>" +
+            "<if test='receiverPhone != null'>receiver_phone = #{receiverPhone},</if>" +
+            "<if test='province != null'>province = #{province},</if>" +
+            "<if test='city != null'>city = #{city},</if>" +
+            "<if test='district != null'>district = #{district},</if>" +
+            "<if test='detailAddress != null'>detail_address = #{detailAddress},</if>" +
+            "<if test='isDefault != null'>is_default = #{isDefault},</if>" +
+            "update_time = #{updateTime}" +
+            "</set>" +
+            "WHERE id = #{id}" +
+            "</script>")
     int update(Address address);
     
     /**
@@ -31,6 +49,7 @@ public interface AddressMapper {
      * @param id 地址ID
      * @return 影响行数
      */
+    @Delete("DELETE FROM addresses WHERE id = #{id}")
     int deleteById(Long id);
     
     /**
@@ -38,6 +57,7 @@ public interface AddressMapper {
      * @param userId 用户ID
      * @return 影响行数
      */
+    @Delete("DELETE FROM addresses WHERE user_id = #{userId}")
     int deleteByUserId(Long userId);
     
     /**
@@ -45,6 +65,7 @@ public interface AddressMapper {
      * @param id 地址ID
      * @return 地址信息
      */
+    @Select("SELECT * FROM addresses WHERE id = #{id}")
     Address findById(Long id);
     
     /**
@@ -52,6 +73,7 @@ public interface AddressMapper {
      * @param userId 用户ID
      * @return 地址列表
      */
+    @Select("SELECT * FROM addresses WHERE user_id = #{userId}")
     List<Address> findByUserId(Long userId);
     
     /**
@@ -59,6 +81,7 @@ public interface AddressMapper {
      * @param userId 用户ID
      * @return 默认地址
      */
+    @Select("SELECT * FROM addresses WHERE user_id = #{userId} AND is_default = 1")
     Address findDefaultByUserId(Long userId);
     
     /**
@@ -66,5 +89,6 @@ public interface AddressMapper {
      * @param userId 用户ID
      * @return 影响行数
      */
+    @Update("UPDATE addresses SET is_default = 0 WHERE user_id = #{userId}")
     int resetDefault(@Param("userId") Long userId);
 } 

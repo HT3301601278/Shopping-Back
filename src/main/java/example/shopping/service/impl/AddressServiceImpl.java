@@ -1,16 +1,19 @@
 package example.shopping.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import example.shopping.dto.AddressDTO;
 import example.shopping.entity.Address;
+import example.shopping.entity.User;
 import example.shopping.exception.BusinessException;
 import example.shopping.mapper.AddressMapper;
 import example.shopping.service.AddressService;
+import example.shopping.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 地址服务实现类
@@ -20,6 +23,9 @@ public class AddressServiceImpl implements AddressService {
 
     @Autowired
     private AddressMapper addressMapper;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public List<Address> findByUserId(Long userId) {
@@ -54,6 +60,9 @@ public class AddressServiceImpl implements AddressService {
         address.setUpdateTime(now);
         
         addressMapper.insert(address);
+
+        // 同步更新用户表中的addresses字段
+        syncUserAddresses(userId);
         
         return address;
     }
@@ -87,6 +96,9 @@ public class AddressServiceImpl implements AddressService {
         address.setUpdateTime(new Date());
         
         addressMapper.update(address);
+
+        // 同步更新用户表中的addresses字段
+        syncUserAddresses(userId);
         
         return address;
     }
@@ -105,7 +117,12 @@ public class AddressServiceImpl implements AddressService {
             throw new BusinessException("无权操作此地址");
         }
         
-        return addressMapper.deleteById(id) > 0;
+        boolean result = addressMapper.deleteById(id) > 0;
+        if (result) {
+            // 同步更新用户表中的addresses字段
+            syncUserAddresses(userId);
+        }
+        return result;
     }
 
     @Override
@@ -133,7 +150,12 @@ public class AddressServiceImpl implements AddressService {
         address.setIsDefault(true);
         address.setUpdateTime(new Date());
         
-        return addressMapper.update(address) > 0;
+        boolean result = addressMapper.update(address) > 0;
+        if (result) {
+            // 同步更新用户表中的addresses字段
+            syncUserAddresses(userId);
+        }
+        return result;
     }
 
     @Override
@@ -147,5 +169,28 @@ public class AddressServiceImpl implements AddressService {
      */
     private void resetDefaultAddress(Long userId) {
         addressMapper.resetDefault(userId);
+    }
+
+    /**
+     * 同步更新用户表中的addresses字段
+     * @param userId 用户ID
+     */
+    private void syncUserAddresses(Long userId) {
+        // 获取用户所有地址
+        List<Address> addresses = addressMapper.findByUserId(userId);
+        
+        List<Long> addressIds = addresses.stream()
+                .map(Address::getId)
+                .collect(java.util.stream.Collectors.toList());
+
+        // 更新用户表
+        User user = userService.findById(userId);
+        if (user != null) {
+            User updateUser = new User();
+            updateUser.setId(userId);
+            updateUser.setAddresses(JSON.toJSONString(addressIds));
+            updateUser.setUpdateTime(new Date());
+            userService.updateUser(updateUser);
+        }
     }
 } 

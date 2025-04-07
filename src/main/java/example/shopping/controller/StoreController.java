@@ -1,10 +1,15 @@
 package example.shopping.controller;
 
 import example.shopping.entity.Store;
+import example.shopping.entity.User;
+import example.shopping.exception.BusinessException;
+import example.shopping.mapper.UserMapper;
 import example.shopping.service.StoreService;
 import example.shopping.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -20,6 +25,9 @@ public class StoreController {
 
     @Autowired
     private StoreService storeService;
+    
+    @Autowired
+    private UserMapper userMapper;
 
     /**
      * 获取所有店铺
@@ -156,11 +164,17 @@ public class StoreController {
         return Result.success(storeService.findByUserId(userId));
     }
 
-    // 工具方法：获取当前登录用户ID (实际实现需要使用Spring Security的上下文)
+    // 工具方法：获取当前登录用户ID
     private Long getCurrentUserId() {
-        // 此处应当使用Spring Security获取当前登录用户ID
-        // 示例代码，实际实现需要替换
-        return 1L; // 假设当前用户ID为1
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails) principal).getUsername();
+            User user = userMapper.findByUsername(username);
+            if (user != null) {
+                return user.getId();
+            }
+        }
+        throw new BusinessException("用户未登录或登录已过期");
     }
 
     // 工具方法：验证当前用户是否为店铺所有者

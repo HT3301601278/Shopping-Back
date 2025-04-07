@@ -7,6 +7,8 @@ import example.shopping.mapper.CustomerServiceSessionMapper;
 import example.shopping.mapper.StoreMapper;
 import example.shopping.mapper.UserMapper;
 import example.shopping.service.StoreService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,8 @@ import java.util.Map;
  */
 @Service
 public class StoreServiceImpl implements StoreService {
+
+    private static final Logger log = LoggerFactory.getLogger(StoreServiceImpl.class);
 
     @Autowired
     private StoreMapper storeMapper;
@@ -38,12 +42,6 @@ public class StoreServiceImpl implements StoreService {
         User user = userMapper.findById(userId);
         if (user == null) {
             throw new BusinessException("用户不存在");
-        }
-        
-        // 检查用户是否已有店铺
-        Store existingStore = storeMapper.findByUserId(userId);
-        if (existingStore != null) {
-            throw new BusinessException("用户已有店铺");
         }
         
         // 补充店铺信息
@@ -134,17 +132,38 @@ public class StoreServiceImpl implements StoreService {
         if (status == 1 && store.getStatus() != 1) {
             // 获取店铺所有者
             User storeOwner = userMapper.findById(store.getUserId());
+            log.info("店铺所有者信息: {}", storeOwner);
+            
             if (storeOwner != null && "ROLE_USER".equals(storeOwner.getRole())) {
-                // 更新用户角色为商家
+                log.info("开始更新用户角色为商家，用户ID: {}", storeOwner.getId());
+                
+                // 保留原有用户信息，仅更新角色和更新时间
                 User updateUser = new User();
                 updateUser.setId(storeOwner.getId());
+                updateUser.setUsername(storeOwner.getUsername());
+                updateUser.setPassword(storeOwner.getPassword());
+                updateUser.setPhone(storeOwner.getPhone());
+                updateUser.setName(storeOwner.getName());
+                updateUser.setAvatar(storeOwner.getAvatar());
                 updateUser.setRole("ROLE_MERCHANT");
+                updateUser.setStatus(storeOwner.getStatus());
+                updateUser.setAddresses(storeOwner.getAddresses());
                 updateUser.setUpdateTime(new Date());
-                userMapper.update(updateUser);
+                
+                int result = userMapper.update(updateUser);
+                log.info("用户角色更新结果: {}", result);
+                
+                // 再次查询确认更新结果
+                User updatedUser = userMapper.findById(storeOwner.getId());
+                log.info("更新后的用户信息: {}", updatedUser);
+            } else {
+                log.info("用户不满足更新条件，当前角色: {}", storeOwner != null ? storeOwner.getRole() : "null");
             }
         }
         
-        return storeMapper.updateStatus(id, status) > 0;
+        boolean updateResult = storeMapper.updateStatus(id, status) > 0;
+        log.info("店铺状态更新结果: {}", updateResult);
+        return updateResult;
     }
 
     @Override

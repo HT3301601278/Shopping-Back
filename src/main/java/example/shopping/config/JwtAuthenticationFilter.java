@@ -1,8 +1,8 @@
 package example.shopping.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import example.shopping.utils.JwtTokenUtil;
 import example.shopping.utils.Result;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -86,4 +86,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         chain.doFilter(request, response);
     }
-} 
+}

@@ -164,7 +164,7 @@ public class CategoryServiceImpl implements CategoryService {
     private void buildChildren(Category parent, Map<Long, List<Category>> parentIdMap) {
         List<Category> children = parentIdMap.get(parent.getId());
         if (children != null) {
-            //parent.setChildren(children);
+            parent.setChildren(children);
             children.forEach(child -> buildChildren(child, parentIdMap));
         }
     }

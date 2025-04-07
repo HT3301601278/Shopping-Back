@@ -3,10 +3,15 @@ package example.shopping.controller;
 import example.shopping.dto.CustomerServiceDTO;
 import example.shopping.entity.CustomerServiceMessage;
 import example.shopping.entity.CustomerServiceSession;
+import example.shopping.entity.User;
+import example.shopping.exception.BusinessException;
+import example.shopping.mapper.UserMapper;
 import example.shopping.service.CustomerServiceInterface;
 import example.shopping.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -22,6 +27,9 @@ public class CustomerServiceController {
 
     @Autowired
     private CustomerServiceInterface customerService;
+
+    @Autowired
+    private UserMapper userMapper;
 
     /**
      * 创建客服会话
@@ -196,11 +204,22 @@ public class CustomerServiceController {
         return Result.success(customerService.handleComplaint(sessionId, complaintDTO), "投诉处理成功");
     }
 
-    // 工具方法：获取当前登录用户ID (实际实现需要使用Spring Security的上下文)
+    // 工具方法：获取当前登录用户ID
     private Long getCurrentUserId() {
-        // 此处应当使用Spring Security获取当前登录用户ID
-        // 示例代码，实际实现需要替换
-        return 1L; // 假设当前用户ID为1
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new BusinessException("用户未登录");
+        }
+        String username = authentication.getName();
+        if (username == null) {
+            throw new BusinessException("无法获取用户名");
+        }
+        
+        User user = userMapper.findByUsername(username);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        return user.getId();
     }
 
     // 工具方法：验证会话权限

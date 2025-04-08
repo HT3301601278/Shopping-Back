@@ -80,4 +80,24 @@ public interface CustomerServiceMessageMapper {
      */
     @Delete("DELETE FROM customer_service_messages WHERE session_id = #{sessionId}")
     int deleteBySessionId(Long sessionId);
+    
+    /**
+     * 计算店铺的平均响应时间（分钟）
+     * @param storeId 店铺ID
+     * @return 平均响应时间
+     */
+    @Select("WITH user_messages AS (" +
+            "  SELECT m1.session_id, m1.create_time as user_time, " +
+            "  MIN(m2.create_time) as store_response_time " +
+            "  FROM customer_service_messages m1 " +
+            "  LEFT JOIN customer_service_messages m2 ON m1.session_id = m2.session_id " +
+            "  AND m2.create_time > m1.create_time " +
+            "  AND m2.from_type = 1 " +
+            "  WHERE m1.from_type = 0 AND m1.store_id = #{storeId} " +
+            "  GROUP BY m1.id, m1.session_id, m1.create_time" +
+            ") " +
+            "SELECT AVG(TIMESTAMPDIFF(MINUTE, user_time, store_response_time)) " +
+            "FROM user_messages " +
+            "WHERE store_response_time IS NOT NULL")
+    Double calculateAverageResponseTime(Long storeId);
 } 

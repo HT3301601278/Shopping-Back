@@ -29,6 +29,42 @@ import java.util.*;
 @Slf4j
 public class OrderServiceImpl implements OrderService {
 
+    public enum OrderStatus {
+        UNPAID(0, "待支付"),
+        PAID(1, "已支付"),
+        SHIPPED(2, "已发货"),
+        COMPLETED(3, "已完成"),
+        CANCELLED(4, "已取消"),
+        REFUNDED(5, "已退款"),
+        REFUND_PENDING(6, "退款申请中"),
+        REFUND_REJECTED(7, "退款被拒绝");
+
+        private final int value;
+        private final String description;
+
+        OrderStatus(int value, String description) {
+            this.value = value;
+            this.description = description;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public static OrderStatus fromValue(int value) {
+            for (OrderStatus status : OrderStatus.values()) {
+                if (status.getValue() == value) {
+                    return status;
+                }
+            }
+            throw new IllegalArgumentException("Unknown OrderStatus value: " + value);
+        }
+    }
+
     @Autowired
     private OrderMapper orderMapper;
 
@@ -121,8 +157,8 @@ public class OrderServiceImpl implements OrderService {
         order.setTotalAmount(totalAmount);
         order.setAddressInfo(addressInfo);
         order.setPaymentType(orderDTO.getPaymentType());
-        order.setStatus(0); // 0-待付款
-        order.setRefundStatus(0); // 0-无退款
+        order.setStatus(OrderStatus.UNPAID.getValue());
+        order.setRemark(orderDTO.getRemark());
         Date now = new Date();
         order.setCreateTime(now);
         order.setUpdateTime(now);
@@ -203,7 +239,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查订单状态是否为待付款
-        if (order.getStatus() != 0) {
+        if (order.getStatus() != OrderStatus.UNPAID.getValue()) {
             throw new BusinessException("只能取消待付款订单");
         }
 
@@ -223,7 +259,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 更新订单状态为已取消
-        order.setStatus(4); // 4-已取消
+        order.setStatus(OrderStatus.CANCELLED.getValue());
         order.setUpdateTime(new Date());
         return orderMapper.update(order) > 0;
     }
@@ -242,12 +278,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查订单状态是否为待付款
-        if (order.getStatus() != 0) {
+        if (order.getStatus() != OrderStatus.UNPAID.getValue()) {
             throw new BusinessException("订单状态错误");
         }
 
         // 模拟支付成功
-        order.setStatus(1); // 1-待发货
+        order.setStatus(OrderStatus.PAID.getValue());
         order.setPaymentType(paymentType);
         order.setPaymentTime(new Date());
         order.setUpdateTime(new Date());
@@ -264,11 +300,11 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查订单状态是否为待发货
-        if (order.getStatus() != 1) {
+        if (order.getStatus() != OrderStatus.PAID.getValue()) {
             throw new BusinessException("订单状态错误");
         }
 
-        order.setStatus(2); // 2-待收货
+        order.setStatus(OrderStatus.SHIPPED.getValue());
         order.setShippingTime(new Date());
         order.setUpdateTime(new Date());
 
@@ -289,11 +325,11 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查订单状态是否为待收货
-        if (order.getStatus() != 2) {
+        if (order.getStatus() != OrderStatus.SHIPPED.getValue()) {
             throw new BusinessException("订单状态错误");
         }
 
-        order.setStatus(3); // 3-已完成
+        order.setStatus(OrderStatus.COMPLETED.getValue());
         order.setUpdateTime(new Date());
 
         return orderMapper.update(order) > 0;
@@ -313,11 +349,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查订单状态是否为待发货或待收货
-        if (order.getStatus() != 1 && order.getStatus() != 2) {
+        if (order.getStatus() != OrderStatus.PAID.getValue() && 
+            order.getStatus() != OrderStatus.SHIPPED.getValue()) {
             throw new BusinessException("当前订单状态不支持申请退款");
         }
 
-        order.setRefundStatus(1); // 1-申请退款
+        order.setStatus(OrderStatus.REFUND_PENDING.getValue());
         order.setRefundReason(reason);
         order.setUpdateTime(new Date());
 
@@ -333,15 +370,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查退款状态是否为申请退款
-        if (order.getRefundStatus() != 1) {
+        if (order.getStatus() != OrderStatus.REFUND_PENDING.getValue()) {
             throw new BusinessException("退款状态错误");
         }
 
         if (isAgree) {
-            // 同意退款
-            order.setRefundStatus(2); // 2-退款成功
-            order.setStatus(5); // 5-已退款
-
+            order.setStatus(OrderStatus.REFUNDED.getValue());
             // 恢复商品库存
             List<Map> orderItemsList = JSON.parseArray(order.getItems(), Map.class);
             for (Map item : orderItemsList) {
@@ -357,8 +391,7 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
         } else {
-            // 拒绝退款
-            order.setRefundStatus(3); // 3-退款失败
+            order.setStatus(OrderStatus.REFUND_REJECTED.getValue());
         }
 
         order.setUpdateTime(new Date());
@@ -368,10 +401,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Map<String, Integer> countByStatus(Long userId) {
         Map<String, Integer> result = new HashMap<>();
-        result.put("pendingPayment", orderMapper.findByUserIdAndStatus(userId, 0).size());
-        result.put("pendingShipment", orderMapper.findByUserIdAndStatus(userId, 1).size());
-        result.put("pendingReceipt", orderMapper.findByUserIdAndStatus(userId, 2).size());
-        result.put("completed", orderMapper.findByUserIdAndStatus(userId, 3).size());
+        result.put("pendingPayment", orderMapper.findByUserIdAndStatus(userId, OrderStatus.UNPAID.getValue()).size());
+        result.put("pendingShipment", orderMapper.findByUserIdAndStatus(userId, OrderStatus.PAID.getValue()).size());
+        result.put("pendingReceipt", orderMapper.findByUserIdAndStatus(userId, OrderStatus.SHIPPED.getValue()).size());
+        result.put("completed", orderMapper.findByUserIdAndStatus(userId, OrderStatus.COMPLETED.getValue()).size());
         result.put("pendingReview", orderMapper.findPendingReview(userId).size());
 
         return result;
@@ -395,6 +428,23 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> findPendingReview(Long userId) {
         return orderMapper.findPendingReview(userId);
+    }
+
+    @Override
+    public Order getOrderById(Long orderId) {
+        if (orderId == null) {
+            throw new BusinessException("订单ID不能为空");
+        }
+        return orderMapper.findById(orderId);
+    }
+
+    @Override
+    public void updateOrder(Order order) {
+        if (order == null) {
+            throw new BusinessException("订单不能为空");
+        }
+        order.setUpdateTime(new Date());
+        orderMapper.update(order);
     }
 
     /**

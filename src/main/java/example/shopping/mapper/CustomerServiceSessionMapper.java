@@ -123,7 +123,12 @@ public interface CustomerServiceSessionMapper {
      * @param remark 评价备注
      * @return 影响行数
      */
-    @Update("UPDATE customer_service_sessions SET evaluation = #{evaluation}, remark = #{remark}, update_time = NOW() WHERE id = #{id}")
+    @Update("UPDATE customer_service_sessions SET " +
+            "evaluation = #{evaluation}, " +
+            "remark = #{remark}, " +
+            "complaint_status = CASE WHEN #{evaluation} <= 2 THEN 0 ELSE NULL END, " +
+            "update_time = NOW() " +
+            "WHERE id = #{id}")
     int updateEvaluation(@Param("id") Long id, @Param("evaluation") Integer evaluation, @Param("remark") String remark);
     
     /**
@@ -149,4 +154,33 @@ public interface CustomerServiceSessionMapper {
      */
     @Select("SELECT AVG(evaluation) FROM customer_service_sessions WHERE store_id = #{storeId} AND evaluation IS NOT NULL")
     Double calculateAverageEvaluation(Long storeId);
+    
+    /**
+     * 查询所有投诉会话
+     * @return 投诉会话列表
+     */
+    @Select("SELECT * FROM customer_service_sessions WHERE evaluation <= 2 AND complaint_status = 0 ORDER BY create_time DESC")
+    List<CustomerServiceSession> findComplainedSessions();
+    
+    /**
+     * 更新投诉状态
+     * @param id 会话ID
+     * @param complaintStatus 投诉状态
+     * @param complaintResult 处理结果
+     * @param isPenalty 是否处罚
+     * @param penaltyContent 处罚内容
+     * @return 影响行数
+     */
+    @Update("UPDATE customer_service_sessions SET " +
+            "complaint_status = #{complaintStatus}, " +
+            "complaint_result = #{complaintResult}, " +
+            "is_penalty = #{isPenalty}, " +
+            "penalty_content = #{penaltyContent}, " +
+            "update_time = NOW() " +
+            "WHERE id = #{id}")
+    int updateComplaintStatus(@Param("id") Long id,
+                            @Param("complaintStatus") Integer complaintStatus,
+                            @Param("complaintResult") String complaintResult,
+                            @Param("isPenalty") Boolean isPenalty,
+                            @Param("penaltyContent") String penaltyContent);
 } 

@@ -50,6 +50,9 @@ public class Order {
 
     private String refundReason;
 
+    @Column(columnDefinition = "TEXT")
+    private String remark;           // 订单备注
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(updatable = false)
     private Date createTime;

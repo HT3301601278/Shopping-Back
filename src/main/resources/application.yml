@@ -18,6 +18,11 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 20MB
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -38,4 +43,9 @@ logging:
     org.springframework.security: ERROR
     org.springframework.web.filter.CorsFilter: ERROR
     org.apache.catalina.core: ERROR
-    org.springframework.web: ERROR 
+    org.springframework.web: ERROR
+
+file:
+  upload:
+    dir: uploads  # 文件上传目录
+    url-prefix: http://localhost:8080/uploads  # 文件访问URL前缀 

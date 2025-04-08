@@ -2,6 +2,7 @@ package example.shopping.service;
 
 import example.shopping.dto.LoginDTO;
 import example.shopping.dto.RegisterDTO;
+import example.shopping.dto.UserProfileDTO;
 import example.shopping.entity.User;
 
 import java.util.List;
@@ -75,4 +76,12 @@ public interface UserService {
      * @return 是否更新成功
      */
     boolean updatePassword(Long userId, String oldPassword, String newPassword);
+
+    /**
+     * 更新用户个人信息
+     * @param userId 用户ID
+     * @param userProfileDTO 用户个人信息
+     * @return 更新后的用户信息
+     */
+    User updateProfile(Long userId, UserProfileDTO userProfileDTO);
 } 

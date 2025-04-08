@@ -130,4 +130,11 @@ public interface CustomerServiceInterface {
      * @return 投诉列表
      */
     List<Map<String, Object>> getComplaints();
+    
+    /**
+     * 根据ID查询会话
+     * @param sessionId 会话ID
+     * @return 会话信息
+     */
+    CustomerServiceSession findById(Long sessionId);
 } 

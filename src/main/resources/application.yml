@@ -33,4 +33,9 @@ jwt:
 
 logging:
   level:
-    example.shopping: debug 
+    root: INFO
+    example.shopping: INFO
+    org.springframework.security: ERROR
+    org.springframework.web.filter.CorsFilter: ERROR
+    org.apache.catalina.core: ERROR
+    org.springframework.web: ERROR 

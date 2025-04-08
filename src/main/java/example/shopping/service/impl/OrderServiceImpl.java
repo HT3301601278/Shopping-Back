@@ -2,15 +2,18 @@ package example.shopping.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import example.shopping.dto.OrderDTO;
+import example.shopping.entity.Address;
 import example.shopping.entity.Order;
 import example.shopping.entity.Product;
 import example.shopping.entity.User;
 import example.shopping.exception.BusinessException;
+import example.shopping.mapper.AddressMapper;
 import example.shopping.mapper.OrderMapper;
 import example.shopping.mapper.ProductMapper;
 import example.shopping.mapper.UserMapper;
 import example.shopping.service.CartService;
 import example.shopping.service.OrderService;
+import example.shopping.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +40,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private CartService cartService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private AddressMapper addressMapper;
 
     @Override
     @Transactional
@@ -413,20 +422,28 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("用户没有配置收货地址");
         }
 
-        List<Map> addressList = JSON.parseArray(addresses, Map.class);
-        Map selectedAddress = null;
-
-        for (Map address : addressList) {
-            if (address.get("id").equals(addressId.toString())) {
-                selectedAddress = address;
-                break;
-            }
-        }
-
-        if (selectedAddress == null) {
+        List<Long> addressIds = JSON.parseArray(addresses, Long.class);
+        if (!addressIds.contains(addressId)) {
             throw new BusinessException("收货地址不存在");
         }
 
-        return JSON.toJSONString(selectedAddress);
+        // 从地址表中获取地址信息
+        Address address = addressMapper.findById(addressId);
+        if (address == null) {
+            throw new BusinessException("收货地址不存在");
+        }
+
+        // 转换为JSON格式
+        Map<String, Object> addressMap = new HashMap<>();
+        addressMap.put("id", address.getId().toString());
+        addressMap.put("name", address.getReceiverName());
+        addressMap.put("phone", address.getReceiverPhone());
+        addressMap.put("province", address.getProvince());
+        addressMap.put("city", address.getCity());
+        addressMap.put("district", address.getDistrict());
+        addressMap.put("detailAddress", address.getDetailAddress());
+        addressMap.put("isDefault", address.getIsDefault());
+
+        return JSON.toJSONString(addressMap);
     }
 }

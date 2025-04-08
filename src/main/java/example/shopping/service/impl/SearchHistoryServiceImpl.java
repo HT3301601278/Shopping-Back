@@ -33,14 +33,21 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
         searchHistory.setResultCount(searchHistoryDTO.getResultCount());
         searchHistory.setCreateTime(new Date());
         
-        searchHistoryMapper.insert(searchHistory);
-        
-        return searchHistory;
+        try {
+            int result = searchHistoryMapper.insert(searchHistory);
+            return result > 0 ? searchHistory : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
     public List<SearchHistory> findByUserId(Long userId) {
-        return searchHistoryMapper.findByUserId(userId);
+        try {
+            return searchHistoryMapper.findByUserId(userId);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     @Override
@@ -49,17 +56,21 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
             limit = 10; // 默认返回10个
         }
         
-        // 获取所有搜索历史并按时间排序
-        List<SearchHistory> allHistories = searchHistoryMapper.findByUserId(userId);
-        
-        // 按创建时间倒序排序
-        allHistories.sort(Comparator.comparing(SearchHistory::getCreateTime).reversed());
-        
-        // 返回前limit条记录
-        if (allHistories.size() <= limit) {
-            return allHistories;
-        } else {
-            return allHistories.subList(0, limit);
+        try {
+            // 获取所有搜索历史并按时间排序
+            List<SearchHistory> allHistories = searchHistoryMapper.findByUserId(userId);
+            
+            // 按创建时间倒序排序
+            allHistories.sort(Comparator.comparing(SearchHistory::getCreateTime).reversed());
+            
+            // 返回前limit条记录
+            if (allHistories.size() <= limit) {
+                return allHistories;
+            } else {
+                return allHistories.subList(0, limit);
+            }
+        } catch (Exception e) {
+            return new ArrayList<>();
         }
     }
 
@@ -129,24 +140,7 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
             limit = 10; // 默认返回10个
         }
         
-        // 为简化实现，我们只返回一个示例数据
-        // 在实际实现中，应该从数据库中统计全局热门关键词
-        List<Map<String, Object>> result = new ArrayList<>();
-        
-        // 创建一些示例数据
-        String[] sampleKeywords = {"手机", "电脑", "鞋子", "衣服", "零食", "家具", "书籍", "玩具", "化妆品", "首饰"};
-        Random random = new Random();
-        
-        for (int i = 0; i < Math.min(limit, sampleKeywords.length); i++) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("keyword", sampleKeywords[i]);
-            item.put("count", random.nextInt(1000) + 1); // 随机生成1-1000的计数
-            result.add(item);
-        }
-        
-        // 按搜索次数降序排序
-        result.sort((a, b) -> Integer.compare((Integer)b.get("count"), (Integer)a.get("count")));
-        
-        return result;
+        // 使用SearchHistoryMapper来获取全局热门关键词
+        return searchHistoryMapper.findHotKeywords(limit);
     }
 } 

@@ -272,6 +272,11 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         return new ArrayList<>();
     }
     
+    @Override
+    public CustomerServiceSession findById(Long sessionId) {
+        return sessionMapper.findById(sessionId);
+    }
+    
     /**
      * 转换会话对象为Map
      * @param session 会话对象

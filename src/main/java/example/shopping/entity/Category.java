@@ -1,8 +1,10 @@
 package example.shopping.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * 商品分类实体类
@@ -27,6 +29,10 @@ public class Category {
     private Integer status;    // 状态(0-禁用, 1-启用)
 
     private Integer sortOrder; // 排序值
+    
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<Category> children;
 
     @PrePersist
     protected void onCreate() {

@@ -231,45 +231,65 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
     }
     
     @Override
+    @Transactional
     public boolean handleComplaint(Long sessionId, CustomerServiceDTO.ComplaintDTO complaintDTO) {
         CustomerServiceSession session = sessionMapper.findById(sessionId);
         if (session == null) {
             throw new BusinessException("会话不存在");
         }
         
-        // 暂时用模拟实现替代，实际项目中需要实现数据库方法
-        // TODO: 实现CustomerServiceSessionMapper中的updateComplaintStatus方法
+        // 检查投诉状态
+        if (session.getComplaintStatus() != 0) {
+            throw new BusinessException("该投诉已处理");
+        }
         
-        // 简单模拟数据更新成功
-        return true;
+        // 更新投诉状态
+        return sessionMapper.updateComplaintStatus(
+                sessionId,
+                complaintDTO.getStatus(),
+                complaintDTO.getResult(),
+                complaintDTO.getIsPenalty(),
+                complaintDTO.getPenaltyContent()
+        ) > 0;
     }
     
     @Override
     public int getSessionCount(Long storeId) {
-        // 暂时用模拟实现替代，实际项目中需要实现数据库方法
-        // TODO: 实现CustomerServiceSessionMapper中的countByStoreId方法
-        
-        // 简单返回已有会话数据的大小
-        List<CustomerServiceSession> sessions = sessionMapper.findByStoreId(storeId);
-        return sessions != null ? sessions.size() : 0;
+        return sessionMapper.countByStoreId(storeId);
     }
     
     @Override
     public double getAverageResponseTime(Long storeId) {
-        // 暂时用模拟实现替代，实际项目中需要实现数据库方法
-        // TODO: 实现CustomerServiceMessageMapper中的calculateAverageResponseTime方法
-        
-        // 简单返回默认值
-        return 5.0; // 假设平均响应时间为5分钟
+        Double avgTime = messageMapper.calculateAverageResponseTime(storeId);
+        return avgTime != null ? avgTime : 0.0;
     }
     
     @Override
     public List<Map<String, Object>> getComplaints() {
-        // 暂时用模拟实现替代，实际项目中需要实现数据库方法
-        // TODO: 实现CustomerServiceSessionMapper中的findComplainedSessions方法
+        List<CustomerServiceSession> complainedSessions = sessionMapper.findComplainedSessions();
+        List<Map<String, Object>> result = new ArrayList<>();
         
-        // 简单返回空列表
-        return new ArrayList<>();
+        for (CustomerServiceSession session : complainedSessions) {
+            Map<String, Object> complaint = new HashMap<>();
+            complaint.put("sessionId", session.getId());
+            complaint.put("userId", session.getUserId());
+            complaint.put("storeId", session.getStoreId());
+            
+            // 获取店铺信息
+            Store store = storeMapper.findById(session.getStoreId());
+            if (store != null) {
+                complaint.put("storeName", store.getName());
+            }
+            
+            // 获取用户评价备注作为投诉内容
+            complaint.put("complaintContent", session.getRemark());
+            complaint.put("status", session.getComplaintStatus());
+            complaint.put("createTime", session.getCreateTime());
+            
+            result.add(complaint);
+        }
+        
+        return result;
     }
     
     @Override

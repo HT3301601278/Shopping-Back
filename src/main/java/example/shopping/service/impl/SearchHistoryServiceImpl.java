@@ -140,24 +140,7 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
             limit = 10; // 默认返回10个
         }
         
-        // 为简化实现，我们只返回一个示例数据
-        // 在实际实现中，应该从数据库中统计全局热门关键词
-        List<Map<String, Object>> result = new ArrayList<>();
-        
-        // 创建一些示例数据
-        String[] sampleKeywords = {"手机", "电脑", "鞋子", "衣服", "零食", "家具", "书籍", "玩具", "化妆品", "首饰"};
-        Random random = new Random();
-        
-        for (int i = 0; i < Math.min(limit, sampleKeywords.length); i++) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("keyword", sampleKeywords[i]);
-            item.put("count", random.nextInt(1000) + 1); // 随机生成1-1000的计数
-            result.add(item);
-        }
-        
-        // 按搜索次数降序排序
-        result.sort((a, b) -> Integer.compare((Integer)b.get("count"), (Integer)a.get("count")));
-        
-        return result;
+        // 使用SearchHistoryMapper来获取全局热门关键词
+        return searchHistoryMapper.findHotKeywords(limit);
     }
 } 

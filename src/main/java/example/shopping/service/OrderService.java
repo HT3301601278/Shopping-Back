@@ -154,4 +154,7 @@ public interface OrderService {
      * @return 待评价订单列表
      */
     List<Order> findPendingReview(Long userId);
+
+    Order getOrderById(Long orderId);
+    void updateOrder(Order order);
 } 

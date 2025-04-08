@@ -7,6 +7,7 @@ import example.shopping.service.impl.OrderServiceImpl.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         // 模拟支付过程
         order.setStatus(OrderStatus.PAID.getValue());
+        order.setPaymentTime(new Date());
         orderService.updateOrder(order);
 
         Map<String, Object> result = new HashMap<>();
@@ -46,7 +48,8 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("订单不存在");
         }
         if (order.getStatus() != OrderStatus.PAID.getValue() && 
-            order.getStatus() != OrderStatus.SHIPPED.getValue()) {
+            order.getStatus() != OrderStatus.SHIPPED.getValue() &&
+            order.getStatus() != OrderStatus.COMPLETED.getValue()) {
             throw new RuntimeException("订单状态不允许申请退款");
         }
 

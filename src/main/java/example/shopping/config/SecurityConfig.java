@@ -99,6 +99,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/products/**").permitAll()
             // 允许对分类的GET请求
             .antMatchers("/api/categories/**").permitAll()
+            // 允许访问上传的文件
+            .antMatchers("/uploads/**").permitAll()
+            // 允许上传头像
+            .antMatchers("/api/files/avatars").permitAll()
             // 除上面外的所有请求全部需要鉴权认证
             .anyRequest().authenticated()
             .and()

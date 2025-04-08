@@ -54,6 +54,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         order.setStatus(OrderStatus.REFUND_PENDING.getValue());
+        order.setRefundReason(reason);
         orderService.updateOrder(order);
         return true;
     }

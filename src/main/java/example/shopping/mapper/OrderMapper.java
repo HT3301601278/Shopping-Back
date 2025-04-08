@@ -82,9 +82,9 @@ public interface OrderMapper {
      * @return 影响行数
      */
     @Insert("INSERT INTO orders(order_no, user_id, store_id, items, total_amount, address_info, " +
-            "payment_type, status, refund_status, remark, create_time, update_time) " +
+            "payment_type, status, remark, create_time, update_time) " +
             "VALUES(#{orderNo}, #{userId}, #{storeId}, #{items}, #{totalAmount}, #{addressInfo}, " +
-            "#{paymentType}, #{status}, #{refundStatus}, #{remark}, #{createTime}, #{updateTime})")
+            "#{paymentType}, #{status}, #{remark}, #{createTime}, #{updateTime})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Order order);
     
@@ -100,7 +100,6 @@ public interface OrderMapper {
             "<if test='paymentTime != null'>payment_time = #{paymentTime},</if>" +
             "<if test='shippingTime != null'>shipping_time = #{shippingTime},</if>" +
             "<if test='status != null'>status = #{status},</if>" +
-            "<if test='refundStatus != null'>refund_status = #{refundStatus},</if>" +
             "<if test='refundReason != null'>refund_reason = #{refundReason},</if>" +
             "<if test='remark != null'>remark = #{remark},</if>" +
             "update_time = #{updateTime}" +

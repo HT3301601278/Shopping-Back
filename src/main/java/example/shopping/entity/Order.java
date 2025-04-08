@@ -46,8 +46,6 @@ public class Order {
     @Column(nullable = false)
     private Integer status;          // 订单状态
 
-    private Integer refundStatus;    // 退款状态
-
     private String refundReason;
 
     @Column(columnDefinition = "TEXT")
@@ -64,7 +62,6 @@ public class Order {
     protected void onCreate() {
         createTime = new Date();
         updateTime = new Date();
-        if (refundStatus == null) refundStatus = 0;
     }
 
     @PreUpdate

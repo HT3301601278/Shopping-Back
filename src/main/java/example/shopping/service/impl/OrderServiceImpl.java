@@ -158,7 +158,6 @@ public class OrderServiceImpl implements OrderService {
         order.setAddressInfo(addressInfo);
         order.setPaymentType(orderDTO.getPaymentType());
         order.setStatus(OrderStatus.UNPAID.getValue());
-        order.setRefundStatus(0);
         order.setRemark(orderDTO.getRemark());
         Date now = new Date();
         order.setCreateTime(now);

@@ -4,8 +4,10 @@ import example.shopping.dto.CustomerServiceDTO;
 import example.shopping.entity.CustomerServiceMessage;
 import example.shopping.entity.CustomerServiceSession;
 import example.shopping.entity.User;
+import example.shopping.entity.Store;
 import example.shopping.exception.BusinessException;
 import example.shopping.mapper.UserMapper;
+import example.shopping.mapper.StoreMapper;
 import example.shopping.service.CustomerServiceInterface;
 import example.shopping.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,9 @@ public class CustomerServiceController {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private StoreMapper storeMapper;
 
     /**
      * 创建客服会话
@@ -62,7 +67,7 @@ public class CustomerServiceController {
     @GetMapping("/sessions/store/{storeId}")
     @PreAuthorize("hasRole('MERCHANT')")
     public Result<List<Map<String, Object>>> getStoreSessions(@PathVariable Long storeId) {
-        // 验证当前用户是否为店铺所有者，实际实现需替换
+        // 验证当前用户是否为店铺所有者
         validateStoreOwner(storeId);
         return Result.success(customerService.findSessionsByStoreId(storeId));
     }
@@ -74,7 +79,7 @@ public class CustomerServiceController {
      */
     @PutMapping("/sessions/{sessionId}/end")
     public Result<Boolean> endSession(@PathVariable Long sessionId) {
-        // 验证权限，实际实现需替换
+        // 验证权限
         validateSessionPermission(sessionId);
         return Result.success(customerService.endSession(sessionId), "会话已结束");
     }
@@ -86,7 +91,7 @@ public class CustomerServiceController {
      */
     @GetMapping("/messages/{sessionId}")
     public Result<List<CustomerServiceMessage>> getSessionMessages(@PathVariable Long sessionId) {
-        // 验证权限，实际实现需替换
+        // 验证权限
         validateSessionPermission(sessionId);
         return Result.success(customerService.findMessagesBySessionId(sessionId));
     }
@@ -103,7 +108,7 @@ public class CustomerServiceController {
             @PathVariable Long sessionId,
             @Valid @RequestBody CustomerServiceDTO.MessageDTO messageDTO) {
         Long userId = getCurrentUserId();
-        // 从会话中获取storeId，实际实现需替换
+        // 从会话中获取storeId
         Long storeId = getStoreIdFromSession(sessionId);
         // 用户发送消息，fromType=0
         return Result.success(customerService.sendMessage(userId, storeId, 0, messageDTO), "消息发送成功");
@@ -120,10 +125,10 @@ public class CustomerServiceController {
     public Result<CustomerServiceMessage> sendMerchantMessage(
             @PathVariable Long sessionId,
             @Valid @RequestBody CustomerServiceDTO.MessageDTO messageDTO) {
-        // 从会话中获取userId和storeId，实际实现需替换
+        // 从会话中获取userId和storeId
         Long userId = getUserIdFromSession(sessionId);
         Long storeId = getStoreIdFromSession(sessionId);
-        // 验证当前用户是否为店铺所有者，实际实现需替换
+        // 验证当前用户是否为店铺所有者
         validateStoreOwner(storeId);
         // 商家发送消息，fromType=1
         return Result.success(customerService.sendMessage(userId, storeId, 1, messageDTO), "消息发送成功");
@@ -214,7 +219,7 @@ public class CustomerServiceController {
         if (username == null) {
             throw new BusinessException("无法获取用户名");
         }
-        
+
         User user = userMapper.findByUsername(username);
         if (user == null) {
             throw new BusinessException("用户不存在");
@@ -224,24 +229,68 @@ public class CustomerServiceController {
 
     // 工具方法：验证会话权限
     private void validateSessionPermission(Long sessionId) {
-        // 实际实现需要验证当前用户是否有权限访问该会话
-        // 用户应当只能访问自己的会话，商家应当只能访问自己店铺的会话
+        // 获取当前用户信息
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new BusinessException("用户未登录");
+        }
+
+        // 获取会话信息
+        CustomerServiceSession session = customerService.findById(sessionId);
+        if (session == null) {
+            throw new BusinessException("会话不存在");
+        }
+
+        // 获取当前用户ID
+        Long currentUserId = getCurrentUserId();
+
+        // 判断用户角色
+        boolean isMerchant = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MERCHANT"));
+
+        if (isMerchant) {
+            // 如果是商家，验证是否为该店铺的所有者
+            validateStoreOwner(session.getStoreId());
+        } else {
+            // 如果是普通用户，验证是否为会话的用户
+            if (!session.getUserId().equals(currentUserId)) {
+                throw new BusinessException("您无权访问此会话");
+            }
+        }
     }
 
     // 工具方法：从会话中获取storeId
     private Long getStoreIdFromSession(Long sessionId) {
-        // 实际实现需要从会话中获取storeId
-        return 1L; // 假设storeId为1
+        CustomerServiceSession session = customerService.findById(sessionId);
+        if (session == null) {
+            throw new BusinessException("会话不存在");
+        }
+        return session.getStoreId();
     }
 
     // 工具方法：从会话中获取userId
     private Long getUserIdFromSession(Long sessionId) {
-        // 实际实现需要从会话中获取userId
-        return 1L; // 假设userId为1
+        CustomerServiceSession session = customerService.findById(sessionId);
+        if (session == null) {
+            throw new BusinessException("会话不存在");
+        }
+        return session.getUserId();
     }
 
     // 工具方法：验证当前用户是否为店铺所有者
     private void validateStoreOwner(Long storeId) {
-        // 实际实现需要验证当前用户是否为店铺所有者
+        // 获取当前用户ID
+        Long userId = getCurrentUserId();
+
+        // 查询店铺信息
+        Store store = storeMapper.findById(storeId);
+        if (store == null) {
+            throw new BusinessException("店铺不存在");
+        }
+
+        // 验证当前用户是否为店铺所有者
+        if (!store.getUserId().equals(userId)) {
+            throw new BusinessException("您不是该店铺的所有者，无权访问");
+        }
     }
-} 
+}

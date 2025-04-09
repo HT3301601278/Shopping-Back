@@ -1,14 +1,18 @@
 package example.shopping.entity;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * 评论实体类
  */
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "reviews")
 public class Review {
@@ -34,27 +38,34 @@ public class Review {
     @Column(columnDefinition = "TEXT")
     private String images;       // JSON格式存储图片URLs
 
-    private String reply;        // 商家回复
+    @Column
+    private Long parentId;       // 父评论ID，用于关联回复，为null表示是原始评论
 
     @Column(nullable = false)
-    private Integer status;      // 状态(0-审核中, 1-显示, 2-隐藏)
+    private Integer type;        // 评论类型(0-用户评论, 1-商家回复, 2-用户追评)
+
+    @Column(nullable = false)
+    private Integer status;      // 状态(0-正常显示, 1-待审核, 2-隐藏)
 
     @Column(nullable = false)
     private Boolean isTop;       // 是否置顶
 
-    @Temporal(TemporalType.TIMESTAMP)
+    @Column(columnDefinition = "TEXT")
+    private String reason;       // 审核原因
+
     @Column(updatable = false)
-    private Date createTime;
+    private LocalDateTime createTime;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateTime;
 
     @PrePersist
     protected void onCreate() {
-        createTime = new Date();
+        createTime = LocalDateTime.now();
         updateTime = new Date();
-        if (status == null) status = 0;
+        if (status == null) status = 0;  // 默认状态改为0（正常显示）
         if (isTop == null) isTop = false;
+        if (type == null) type = 0;      // 默认为用户评论
     }
 
     @PreUpdate

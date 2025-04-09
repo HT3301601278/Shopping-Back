@@ -170,6 +170,6 @@ public interface OrderMapper {
      * @param userId 用户ID
      * @return 待评价订单列表
      */
-    @Select("SELECT * FROM orders WHERE user_id = #{userId} AND status = 3 AND id NOT IN (SELECT order_id FROM reviews WHERE user_id = #{userId}) ORDER BY create_time DESC")
+    @Select("SELECT * FROM orders WHERE user_id = #{userId} AND status IN (3, 5, 6, 7) ORDER BY create_time DESC")
     List<Order> findPendingReview(Long userId);
 } 

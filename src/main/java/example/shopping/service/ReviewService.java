@@ -34,6 +34,22 @@ public interface ReviewService {
     List<Review> findByProductId(Long productId);
     
     /**
+     * 根据商品ID和状态查询评论
+     * @param productId 商品ID
+     * @param status 状态
+     * @return 评论列表
+     */
+    List<Review> findByProductIdAndStatus(Long productId, Integer status);
+    
+    /**
+     * 根据商品ID为商家查询评论
+     * @param productId 商品ID
+     * @param userId 商家ID
+     * @return 评论列表
+     */
+    List<Review> findByProductIdForMerchant(Long productId, Long userId);
+    
+    /**
      * 根据用户ID查询评论
      * @param userId 用户ID
      * @return 评论列表
@@ -62,14 +78,6 @@ public interface ReviewService {
     Map<String, Object> findByPage(int pageNum, int pageSize);
     
     /**
-     * 商家回复评论
-     * @param id 评论ID
-     * @param reply 回复内容
-     * @return 是否回复成功
-     */
-    boolean reply(Long id, String reply);
-    
-    /**
      * 管理员审核评论
      * @param id 评论ID
      * @param status 状态(1-显示, 2-隐藏)
@@ -78,12 +86,13 @@ public interface ReviewService {
     boolean audit(Long id, Integer status);
     
     /**
-     * 管理员设置评论置顶状态
+     * 商家设置评论置顶状态
      * @param id 评论ID
      * @param isTop 是否置顶
+     * @param merchantId 商家ID
      * @return 是否设置成功
      */
-    boolean setTop(Long id, Boolean isTop);
+    boolean setTop(Long id, Boolean isTop, Long merchantId);
     
     /**
      * 删除评论
@@ -112,4 +121,27 @@ public interface ReviewService {
      * @return 是否更新成功
      */
     boolean updateProductRating(Long productId);
+
+    /**
+     * 回复评论
+     * @param userId 用户ID
+     * @param reviewDTO 评论信息
+     * @return 回复的评论
+     */
+    Review reply(Long userId, ReviewDTO reviewDTO);
+
+    /**
+     * 商家提交评论审核
+     * @param id 评论ID
+     * @param reason 申请审核的理由
+     * @return 更新后的评论对象
+     */
+    Review submitForReview(Long id, String reason);
+
+    /**
+     * 查询评论的所有回复
+     * @param parentId 父评论ID
+     * @return 回复列表
+     */
+    List<Review> findRepliesByParentId(Long parentId);
 } 

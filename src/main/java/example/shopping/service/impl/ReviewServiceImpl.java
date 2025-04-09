@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,17 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public Review add(Long userId, ReviewDTO reviewDTO) {
+        // 验证必填字段
+        if (reviewDTO.getProductId() == null) {
+            throw new BusinessException("商品ID不能为空");
+        }
+        if (reviewDTO.getOrderId() == null) {
+            throw new BusinessException("订单ID不能为空");
+        }
+        if (reviewDTO.getRating() == null) {
+            throw new BusinessException("评分不能为空");
+        }
+
         // 检查订单是否存在
         Order order = orderMapper.findById(reviewDTO.getOrderId());
         if (order == null) {
@@ -79,13 +91,15 @@ public class ReviewServiceImpl implements ReviewService {
             review.setImages(JSON.toJSONString(reviewDTO.getImages()));
         }
         
+        // 设置评论类型
+        review.setType(reviewDTO.getType() != null ? reviewDTO.getType() : 0); // 默认为用户评论
+        
         // 设置默认状态
         review.setStatus(0); // 0-审核中
         review.setIsTop(false);
         
-        Date now = new Date();
-        review.setCreateTime(now);
-        review.setUpdateTime(now);
+        review.setCreateTime(LocalDateTime.now());
+        review.setUpdateTime(new Date());
         
         reviewMapper.insert(review);
         
@@ -94,7 +108,7 @@ public class ReviewServiceImpl implements ReviewService {
         
         // 更新订单状态为已评价
         order.setStatus(8); // 8-已评价
-        order.setUpdateTime(now);
+        order.setUpdateTime(new Date());
         orderMapper.update(order);
         
         return review;
@@ -107,12 +121,12 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<Review> findByProductId(Long productId) {
-        return reviewMapper.findByProductId(productId);
+        return reviewMapper.findReviewsAndRepliesByProductId(productId, 0);
     }
 
     @Override
     public List<Review> findByProductIdAndStatus(Long productId, Integer status) {
-        return reviewMapper.findByProductIdAndStatus(productId, status);
+        return reviewMapper.findReviewsAndRepliesByProductId(productId, status);
     }
 
     @Override
@@ -132,7 +146,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<Review> findPendingReviews() {
-        return reviewMapper.findByStatus(0); // 0-审核中
+        return reviewMapper.findByStatus(1); // 1-待审核
     }
 
     @Override
@@ -151,13 +165,64 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public boolean reply(Long id, String reply) {
+    public Review reply(Long userId, ReviewDTO reviewDTO) {
+        // 检查父评论是否存在
+        Review parentReview = reviewMapper.findById(reviewDTO.getParentId());
+        if (parentReview == null) {
+            throw new BusinessException("原评论不存在");
+        }
+
+        // 创建回复评论
+        Review review = new Review();
+        review.setProductId(parentReview.getProductId());
+        review.setUserId(userId);
+        review.setOrderId(parentReview.getOrderId());
+        review.setContent(reviewDTO.getContent());
+        review.setParentId(reviewDTO.getParentId());
+        review.setType(reviewDTO.getType());
+        review.setRating(0); // 回复评论设置评分为0
+        review.setStatus(0); // 设置状态为正常显示
+        review.setIsTop(false);
+        
+        // 处理图片
+        if (reviewDTO.getImages() != null && !reviewDTO.getImages().isEmpty()) {
+            review.setImages(JSON.toJSONString(reviewDTO.getImages()));
+        }
+        
+        review.setCreateTime(LocalDateTime.now());
+        review.setUpdateTime(new Date());
+        
+        reviewMapper.insert(review);
+        
+        return review;
+    }
+
+    @Override
+    @Transactional
+    public Review submitForReview(Long id, String reason) {
         Review review = reviewMapper.findById(id);
         if (review == null) {
             throw new BusinessException("评论不存在");
         }
         
-        return reviewMapper.updateReply(id, reply) > 0;
+        // 只有正常显示的评论可以提交审核
+        if (review.getStatus() != 0) {
+            throw new BusinessException("该评论当前状态不可提交审核");
+        }
+        
+        // 更新评论状态为待审核
+        review.setStatus(1);
+        review.setReason(reason);
+        review.setUpdateTime(new Date());
+        
+        reviewMapper.updateStatus(id, 1, reason);
+        
+        return review;
+    }
+
+    @Override
+    public List<Review> findRepliesByParentId(Long parentId) {
+        return reviewMapper.findRepliesByParentId(parentId);
     }
 
     @Override
@@ -172,7 +237,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw new BusinessException("状态值无效");
         }
         
-        boolean result = reviewMapper.updateStatus(id, status) > 0;
+        boolean result = reviewMapper.updateStatus(id, status, review.getReason()) > 0;
         
         // 如果评论状态有变化，更新商品评分
         if (result && review.getStatus() != status) {
@@ -184,10 +249,21 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public boolean setTop(Long id, Boolean isTop) {
+    public boolean setTop(Long id, Boolean isTop, Long merchantId) {
         Review review = reviewMapper.findById(id);
         if (review == null) {
             throw new BusinessException("评论不存在");
+        }
+        
+        // 检查商品是否属于该商家
+        Product product = productMapper.findById(review.getProductId());
+        if (product == null) {
+            throw new BusinessException("商品不存在");
+        }
+        
+        // 验证商家权限
+        if (!product.getStoreId().equals(merchantId)) {
+            throw new BusinessException("无权操作此评论");
         }
         
         return reviewMapper.updateTopStatus(id, isTop) > 0;

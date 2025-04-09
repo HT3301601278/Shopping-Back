@@ -103,17 +103,39 @@ public class ReviewController {
     }
 
     /**
-     * 商家回复评论
-     * @param id 评论ID
-     * @param reply 回复内容
-     * @return 是否回复成功
+     * 回复评论
+     * @param reviewDTO 评论信息
+     * @return 回复的评论
      */
-    @PutMapping("/{id}/reply")
+    @PostMapping("/reply")
+    @PreAuthorize("isAuthenticated()")
+    public Result<Review> replyReview(@Valid @RequestBody ReviewDTO reviewDTO) {
+        Long userId = getCurrentUserId();
+        return Result.success(reviewService.reply(userId, reviewDTO), "回复成功");
+    }
+
+    /**
+     * 商家提交评论审核
+     * @param id 评论ID
+     * @param reason 申请审核的理由
+     * @return 更新后的评论对象
+     */
+    @PostMapping("/{id}/review-request")
     @PreAuthorize("hasRole('MERCHANT')")
-    public Result<Boolean> replyReview(
+    public Result<Review> submitForReview(
             @PathVariable Long id,
-            @RequestParam String reply) {
-        return Result.success(reviewService.reply(id, reply), "回复成功");
+            @RequestParam String reason) {
+        return Result.success(reviewService.submitForReview(id, reason), "提交审核成功");
+    }
+
+    /**
+     * 获取评论的所有回复
+     * @param parentId 父评论ID
+     * @return 回复列表
+     */
+    @GetMapping("/{parentId}/replies")
+    public Result<List<Review>> getReplies(@PathVariable Long parentId) {
+        return Result.success(reviewService.findRepliesByParentId(parentId));
     }
 
     /**
@@ -131,17 +153,18 @@ public class ReviewController {
     }
 
     /**
-     * 管理员设置评论置顶
+     * 商家设置评论置顶
      * @param id 评论ID
      * @param isTop 是否置顶
      * @return 是否设置成功
      */
     @PutMapping("/{id}/top")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MERCHANT')")
     public Result<Boolean> setReviewTop(
             @PathVariable Long id,
             @RequestParam Boolean isTop) {
-        return Result.success(reviewService.setTop(id, isTop), 
+        Long merchantId = getCurrentUserId();
+        return Result.success(reviewService.setTop(id, isTop, merchantId), 
             isTop ? "评论已置顶" : "评论已取消置顶");
     }
 

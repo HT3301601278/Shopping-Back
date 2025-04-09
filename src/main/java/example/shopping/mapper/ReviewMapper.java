@@ -47,7 +47,9 @@ public interface ReviewMapper {
      * @param orderId 订单ID
      * @return 评论列表
      */
-    @Select("SELECT * FROM reviews WHERE order_id = #{orderId}")
+    @Select("SELECT * FROM reviews WHERE order_id = #{orderId} OR parent_id IN " +
+            "(SELECT id FROM reviews WHERE order_id = #{orderId}) " +
+            "ORDER BY create_time ASC")
     List<Review> findByOrderId(Long orderId);
     
     /**
@@ -82,9 +84,9 @@ public interface ReviewMapper {
      * @return 影响行数
      */
     @Insert("INSERT INTO reviews(product_id, user_id, order_id, content, rating, images, " +
-            "status, is_top, create_time, update_time) " +
+            "parent_id, type, status, is_top, create_time, update_time) " +
             "VALUES(#{productId}, #{userId}, #{orderId}, #{content}, #{rating}, #{images}, " +
-            "#{status}, #{isTop}, #{createTime}, #{updateTime})")
+            "#{parentId}, #{type}, #{status}, #{isTop}, #{createTime}, #{updateTime})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Review review);
     
@@ -99,7 +101,6 @@ public interface ReviewMapper {
             "<if test='content != null'>content = #{content},</if>" +
             "<if test='rating != null'>rating = #{rating},</if>" +
             "<if test='images != null'>images = #{images},</if>" +
-            "<if test='reply != null'>reply = #{reply},</if>" +
             "<if test='status != null'>status = #{status},</if>" +
             "<if test='isTop != null'>is_top = #{isTop},</if>" +
             "update_time = #{updateTime}" +
@@ -120,10 +121,11 @@ public interface ReviewMapper {
      * 更新评论状态
      * @param id 评论ID
      * @param status 状态
+     * @param reason 审核原因
      * @return 影响行数
      */
-    @Update("UPDATE reviews SET status = #{status}, update_time = NOW() WHERE id = #{id}")
-    int updateStatus(@Param("id") Long id, @Param("status") Integer status);
+    @Update("UPDATE reviews SET status = #{status}, reason = #{reason}, update_time = NOW() WHERE id = #{id}")
+    int updateStatus(@Param("id") Long id, @Param("status") Integer status, @Param("reason") String reason);
     
     /**
      * 更新评论置顶状态
@@ -135,20 +137,11 @@ public interface ReviewMapper {
     int updateTopStatus(@Param("id") Long id, @Param("isTop") Boolean isTop);
     
     /**
-     * 更新商家回复
-     * @param id 评论ID
-     * @param reply 回复内容
-     * @return 影响行数
-     */
-    @Update("UPDATE reviews SET reply = #{reply}, update_time = NOW() WHERE id = #{id}")
-    int updateReply(@Param("id") Long id, @Param("reply") String reply);
-    
-    /**
      * 统计商品评论数量
      * @param productId 商品ID
      * @return 评论数量
      */
-    @Select("SELECT COUNT(*) FROM reviews WHERE product_id = #{productId} AND status = 1")
+    @Select("SELECT COUNT(*) FROM reviews WHERE product_id = #{productId} AND status = 0")
     int countByProductId(Long productId);
     
     /**
@@ -156,7 +149,7 @@ public interface ReviewMapper {
      * @param productId 商品ID
      * @return 平均评分
      */
-    @Select("SELECT AVG(rating) FROM reviews WHERE product_id = #{productId} AND status = 1")
+    @Select("SELECT AVG(rating) FROM reviews WHERE product_id = #{productId} AND status = 0 AND type = 0")
     Double calculateAverageRating(Long productId);
     
     /**
@@ -180,4 +173,33 @@ public interface ReviewMapper {
             "(SELECT store_id FROM products WHERE id = #{productId}) " +
             "ORDER BY r.is_top DESC, r.create_time DESC")
     List<Review> findByProductIdForMerchant(@Param("productId") Long productId);
+    
+    /**
+     * 查询评论的所有回复
+     * @param parentId 父评论ID
+     * @return 回复列表
+     */
+    @Select("SELECT * FROM reviews WHERE parent_id = #{parentId} ORDER BY create_time ASC")
+    List<Review> findRepliesByParentId(Long parentId);
+    
+    /**
+     * 查询商品的所有原始评论（非回复）
+     * @param productId 商品ID
+     * @return 评论列表
+     */
+    @Select("SELECT * FROM reviews WHERE product_id = #{productId} AND parent_id IS NULL " +
+            "ORDER BY is_top DESC, create_time DESC")
+    List<Review> findOriginalReviewsByProductId(Long productId);
+    
+    /**
+     * 查询商品的所有原始评论及其回复
+     * @param productId 商品ID
+     * @param status 状态
+     * @return 评论列表
+     */
+    @Select("SELECT * FROM reviews WHERE (product_id = #{productId} AND parent_id IS NULL) " +
+            "OR parent_id IN (SELECT id FROM reviews WHERE product_id = #{productId} AND parent_id IS NULL) " +
+            "AND status = #{status} " +
+            "ORDER BY is_top DESC, create_time DESC")
+    List<Review> findReviewsAndRepliesByProductId(@Param("productId") Long productId, @Param("status") Integer status);
 } 

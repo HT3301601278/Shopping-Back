@@ -69,6 +69,14 @@ public interface UserService {
     List<User> findByRole(String role);
     
     /**
+     * 更新用户状态
+     * @param userId 用户ID
+     * @param status 状态(0-禁用, 1-启用)
+     * @return 是否更新成功
+     */
+    boolean updateStatus(Long userId, Integer status);
+    
+    /**
      * 更新用户密码
      * @param userId 用户ID
      * @param oldPassword 旧密码

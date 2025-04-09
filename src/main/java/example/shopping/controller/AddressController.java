@@ -130,4 +130,14 @@ public class AddressController {
         }
         return user.getId();
     }
+
+    @GetMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Address> getAddressByIdAdmin(@PathVariable Long id) {
+        Address address = addressService.findById(id);
+        if (address == null) {
+            return Result.error("地址不存在");
+        }
+        return Result.success(address);
+    }
 } 

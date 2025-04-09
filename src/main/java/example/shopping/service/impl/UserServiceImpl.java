@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 用户服务实现类
@@ -177,5 +178,16 @@ public class UserServiceImpl implements UserService {
         userMapper.update(updateUser);
         
         return userMapper.findById(userId);
+    }
+
+    @Override
+    public boolean updateStatus(Long userId, Integer status) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            return false;
+        }
+        user.setStatus(status);
+        userMapper.update(user);
+        return true;
     }
 } 

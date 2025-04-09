@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Map;
 
 /**
  * 用户控制器
@@ -76,5 +77,27 @@ public class UserController {
             throw new RuntimeException("用户不存在");
         }
         return user.getId();
+    }
+
+    @PutMapping("/{userId}/status")
+    @PreAuthorize("hasRole('ADMIN')")  // 只有管理员可以修改用户状态
+    public Result<Boolean> updateUserStatus(@PathVariable Long userId, @RequestBody Map<String, Integer> statusMap) {
+        Integer status = statusMap.get("status");
+        if (status == null) {
+            return Result.error("状态参数不能为空");
+        }
+        boolean result = userService.updateStatus(userId, status);
+        return Result.success(result, "用户状态更新成功");
+    }
+
+    @GetMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")  // 只有管理员可以查询任意用户信息
+    public Result<User> getUserById(@PathVariable Long userId) {
+        User user = userService.findById(userId);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        user.setPassword(null); // 不返回密码
+        return Result.success(user);
     }
 } 

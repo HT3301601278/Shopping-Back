@@ -48,9 +48,10 @@ public class ReviewServiceImpl implements ReviewService {
             throw new BusinessException("无权操作此订单");
         }
         
-        // 检查订单状态是否为已完成
-        if (order.getStatus() != 3) { // 3-已完成
-            throw new BusinessException("只能评价已完成的订单");
+        // 检查订单状态是否允许评价
+        int status = order.getStatus();
+        if (status != 3 && status != 5 && status != 6 && status != 7) { 
+            throw new BusinessException("当前订单状态不可评价");
         }
         
         // 检查是否已经评价过
@@ -90,6 +91,11 @@ public class ReviewServiceImpl implements ReviewService {
         
         // 更新商品评分
         updateProductRating(reviewDTO.getProductId());
+        
+        // 更新订单状态为已评价
+        order.setStatus(8); // 8-已评价
+        order.setUpdateTime(now);
+        orderMapper.update(order);
         
         return review;
     }

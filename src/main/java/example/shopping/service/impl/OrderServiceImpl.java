@@ -37,7 +37,8 @@ public class OrderServiceImpl implements OrderService {
         CANCELLED(4, "已取消"),
         REFUNDED(5, "已退款"),
         REFUND_PENDING(6, "退款申请中"),
-        REFUND_REJECTED(7, "退款被拒绝");
+        REFUND_REJECTED(7, "退款被拒绝"),
+        REVIEWED(8, "已评价");
 
         private final int value;
         private final String description;

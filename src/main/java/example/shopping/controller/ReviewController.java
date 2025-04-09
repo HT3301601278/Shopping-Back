@@ -4,11 +4,13 @@ import example.shopping.dto.ReviewDTO;
 import example.shopping.entity.Review;
 import example.shopping.entity.User;
 import example.shopping.service.ReviewService;
+import example.shopping.service.UserService;
 import example.shopping.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -25,6 +27,9 @@ public class ReviewController {
 
     @Autowired
     private ReviewService reviewService;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * 添加评论
@@ -45,7 +50,22 @@ public class ReviewController {
      */
     @GetMapping("/product/{productId}")
     public Result<List<Review>> getProductReviews(@PathVariable Long productId) {
-        return Result.success(reviewService.findByProductId(productId));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isMerchant = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MERCHANT"));
+                
+        if (isAdmin) {
+            // 管理员可以看到所有评论
+            return Result.success(reviewService.findByProductId(productId));
+        } else if (isMerchant) {
+            // 商家只能看到与自己商品相关的所有评论
+            return Result.success(reviewService.findByProductIdForMerchant(productId, getCurrentUserId()));
+        } else {
+            // 普通用户只能看到已审核通过的评论
+            return Result.success(reviewService.findByProductIdAndStatus(productId, 1));
+        }
     }
 
     /**
@@ -162,9 +182,13 @@ public class ReviewController {
     // 工具方法：获取当前登录用户ID
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("用户未登录");
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String username = userDetails.getUsername();
+        
+        User user = userService.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
         }
-        return ((User) authentication.getPrincipal()).getId();
+        return user.getId();
     }
 } 

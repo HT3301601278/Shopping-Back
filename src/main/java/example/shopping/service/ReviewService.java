@@ -34,6 +34,22 @@ public interface ReviewService {
     List<Review> findByProductId(Long productId);
     
     /**
+     * 根据商品ID和状态查询评论
+     * @param productId 商品ID
+     * @param status 状态
+     * @return 评论列表
+     */
+    List<Review> findByProductIdAndStatus(Long productId, Integer status);
+    
+    /**
+     * 根据商品ID为商家查询评论
+     * @param productId 商品ID
+     * @param userId 商家ID
+     * @return 评论列表
+     */
+    List<Review> findByProductIdForMerchant(Long productId, Long userId);
+    
+    /**
      * 根据用户ID查询评论
      * @param userId 用户ID
      * @return 评论列表

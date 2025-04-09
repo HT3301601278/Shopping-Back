@@ -31,7 +31,7 @@ public interface ReviewMapper {
      * @param productId 商品ID
      * @return 评论列表
      */
-    @Select("SELECT * FROM reviews WHERE product_id = #{productId} AND status = 1 ORDER BY is_top DESC, create_time DESC")
+    @Select("SELECT * FROM reviews WHERE product_id = #{productId} ORDER BY is_top DESC, create_time DESC")
     List<Review> findByProductId(Long productId);
     
     /**
@@ -158,4 +158,26 @@ public interface ReviewMapper {
      */
     @Select("SELECT AVG(rating) FROM reviews WHERE product_id = #{productId} AND status = 1")
     Double calculateAverageRating(Long productId);
+    
+    /**
+     * 根据商品ID和状态查询评论
+     * @param productId 商品ID
+     * @param status 评论状态
+     * @return 评论列表
+     */
+    @Select("SELECT * FROM reviews WHERE product_id = #{productId} AND status = #{status} ORDER BY is_top DESC, create_time DESC")
+    List<Review> findByProductIdAndStatus(@Param("productId") Long productId, @Param("status") Integer status);
+    
+    /**
+     * 商家查询与自己商品相关的评论
+     * @param productId 商品ID
+     * @param storeId 店铺ID
+     * @return 评论列表
+     */
+    @Select("SELECT r.* FROM reviews r " +
+            "INNER JOIN products p ON r.product_id = p.id " +
+            "WHERE r.product_id = #{productId} AND p.store_id = " +
+            "(SELECT store_id FROM products WHERE id = #{productId}) " +
+            "ORDER BY r.is_top DESC, r.create_time DESC")
+    List<Review> findByProductIdForMerchant(@Param("productId") Long productId);
 } 

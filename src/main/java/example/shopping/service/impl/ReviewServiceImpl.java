@@ -111,6 +111,16 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    public List<Review> findByProductIdAndStatus(Long productId, Integer status) {
+        return reviewMapper.findByProductIdAndStatus(productId, status);
+    }
+
+    @Override
+    public List<Review> findByProductIdForMerchant(Long productId, Long userId) {
+        return reviewMapper.findByProductIdForMerchant(productId);
+    }
+
+    @Override
     public List<Review> findByUserId(Long userId) {
         return reviewMapper.findByUserId(userId);
     }

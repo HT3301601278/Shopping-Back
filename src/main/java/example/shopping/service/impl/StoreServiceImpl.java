@@ -84,7 +84,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public Store findByUserId(Long userId) {
+    public List<Store> findByUserId(Long userId) {
         return storeMapper.findByUserId(userId);
     }
 
@@ -196,5 +196,31 @@ public class StoreServiceImpl implements StoreService {
         }
         
         return storeMapper.findByStatus(status);
+    }
+
+    @Override
+    public List<Store> findActiveStoresByUserId(Long userId) {
+        return storeMapper.findActiveStoresByUserId(userId);
+    }
+
+    @Override
+    public List<Store> findStoresByUserIdAndStatus(Long userId, Integer status) {
+        if (status < 0 || status > 3) {
+            throw new BusinessException("状态值无效");
+        }
+        return storeMapper.findStoresByUserIdAndStatus(userId, status);
+    }
+
+    @Override
+    public int countStoresByUserId(Long userId) {
+        return storeMapper.countStoresByUserId(userId);
+    }
+
+    @Override
+    public int countStoresByUserIdAndStatus(Long userId, Integer status) {
+        if (status < 0 || status > 3) {
+            throw new BusinessException("状态值无效");
+        }
+        return storeMapper.countStoresByUserIdAndStatus(userId, status);
     }
 } 

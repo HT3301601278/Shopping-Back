@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 店铺控制器
@@ -154,14 +155,69 @@ public class StoreController {
     }
 
     /**
-     * 获取当前登录用户的店铺信息
+     * 获取当前登录商家的所有店铺
+     * @return 店铺列表
+     */
+    @GetMapping("/my-stores")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public Result<List<Store>> getMyStores() {
+        Long userId = getCurrentUserId();
+        return Result.success(storeService.findByUserId(userId));
+    }
+
+    /**
+     * 获取当前登录商家的所有正常营业的店铺
+     * @return 店铺列表
+     */
+    @GetMapping("/my-stores/active")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public Result<List<Store>> getMyActiveStores() {
+        Long userId = getCurrentUserId();
+        return Result.success(storeService.findActiveStoresByUserId(userId));
+    }
+
+    /**
+     * 获取当前登录商家指定状态的店铺
+     * @param status 店铺状态（0：待审核，1：正常，2：已关闭，3：审核未通过）
+     * @return 店铺列表
+     */
+    @GetMapping("/my-stores/status/{status}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public Result<List<Store>> getMyStoresByStatus(@PathVariable Integer status) {
+        Long userId = getCurrentUserId();
+        return Result.success(storeService.findStoresByUserIdAndStatus(userId, status));
+    }
+
+    /**
+     * 获取当前登录商家的店铺统计信息
+     * @return 店铺统计信息
+     */
+    @GetMapping("/my-stores/stats")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public Result<Map<String, Object>> getMyStoresStats() {
+        Long userId = getCurrentUserId();
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("total", storeService.countStoresByUserId(userId));
+        stats.put("pending", storeService.countStoresByUserIdAndStatus(userId, 0));
+        stats.put("active", storeService.countStoresByUserIdAndStatus(userId, 1));
+        stats.put("closed", storeService.countStoresByUserIdAndStatus(userId, 2));
+        stats.put("rejected", storeService.countStoresByUserIdAndStatus(userId, 3));
+        return Result.success(stats);
+    }
+
+    /**
+     * 获取当前登录商家的默认店铺（第一个正常营业的店铺）
      * @return 店铺信息
      */
     @GetMapping("/my-store")
     @PreAuthorize("hasRole('MERCHANT')")
     public Result<Store> getMyStore() {
         Long userId = getCurrentUserId();
-        return Result.success(storeService.findByUserId(userId));
+        List<Store> activeStores = storeService.findActiveStoresByUserId(userId);
+        if (activeStores.isEmpty()) {
+            throw new BusinessException("没有找到正常营业的店铺");
+        }
+        return Result.success(activeStores.get(0));
     }
 
     // 工具方法：获取当前登录用户ID

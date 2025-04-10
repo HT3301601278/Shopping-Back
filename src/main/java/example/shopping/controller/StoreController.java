@@ -78,10 +78,26 @@ public class StoreController {
      * @return 创建的店铺
      */
     @PostMapping
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'MERCHANT')")
     public Result<Store> createStore(@Valid @RequestBody Store store) {
         // 从当前登录用户获取用户ID
         Long userId = getCurrentUserId();
+        
+        // 检查用户已有的店铺数量
+        int storeCount = storeService.countStoresByUserId(userId);
+        if (storeCount >= 10) { // 设置每个用户最多可以创建10个店铺
+            throw new BusinessException("已达到最大店铺数量限制（10个）");
+        }
+        
+        // 检查是否有正在审核中的店铺
+        int pendingCount = storeService.countStoresByUserIdAndStatus(userId, 0);
+        if (pendingCount > 0) {
+            throw new BusinessException("您还有店铺正在审核中，请等待审核完成后再创建新店铺");
+        }
+        
+        // 设置店铺状态为待审核
+        store.setStatus(0);
+        
         return Result.success(storeService.create(userId, store), "店铺创建成功，等待审核");
     }
 

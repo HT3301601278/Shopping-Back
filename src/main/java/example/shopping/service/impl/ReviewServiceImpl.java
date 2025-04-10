@@ -298,6 +298,11 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    public List<Review> findReviewAndAllReplies(Long reviewId) {
+        return reviewMapper.findReviewAndAllReplies(reviewId);
+    }
+
+    @Override
     @Transactional
     public boolean updateProductRating(Long productId) {
         Double avgRating = calculateAverageRating(productId);

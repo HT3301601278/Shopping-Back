@@ -144,4 +144,11 @@ public interface ReviewService {
      * @return 回复列表
      */
     List<Review> findRepliesByParentId(Long parentId);
+
+    /**
+     * 获取评论及其所有相关回复
+     * @param reviewId 评论ID
+     * @return 评论及其所有相关回复列表
+     */
+    List<Review> findReviewAndAllReplies(Long reviewId);
 } 

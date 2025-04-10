@@ -190,6 +190,17 @@ public class ReviewController {
     }
 
     /**
+     * 获取评论及其所有相关回复（管理员功能）
+     * @param reviewId 评论ID
+     * @return 评论及其所有相关回复列表
+     */
+    @GetMapping("/{reviewId}/context")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<List<Review>> getReviewContext(@PathVariable Long reviewId) {
+        return Result.success(reviewService.findReviewAndAllReplies(reviewId));
+    }
+
+    /**
      * 获取商品评论统计
      * @param productId 商品ID
      * @return 评论统计信息

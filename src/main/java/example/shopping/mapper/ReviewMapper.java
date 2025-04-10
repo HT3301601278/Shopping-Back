@@ -202,4 +202,43 @@ public interface ReviewMapper {
             "AND status = #{status} " +
             "ORDER BY is_top DESC, create_time DESC")
     List<Review> findReviewsAndRepliesByProductId(@Param("productId") Long productId, @Param("status") Integer status);
+
+    /**
+     * 查询评论及其所有相关回复的完整上下文
+     * 包括：
+     * 1. 如果是回复，则查询原始评论
+     * 2. 同一用户在同一商品/订单下的所有评论及回复
+     * 3. 其他用户对该评论的所有回复
+     * @param reviewId 评论ID
+     * @return 评论及其所有相关回复列表
+     */
+    @Select({
+        "SELECT DISTINCT r.* FROM reviews r",
+        "JOIN (",
+        "    SELECT user_id, product_id, order_id",
+        "    FROM reviews",
+        "    WHERE id = #{reviewId}",
+        ") target",
+        "WHERE r.id = #{reviewId}",  // 当前评论
+        "OR (",
+        "    r.user_id = target.user_id",  // 同一用户
+        "    AND r.product_id = target.product_id",  // 同一商品
+        "    AND (r.order_id = target.order_id OR target.order_id IS NULL)",  // 同一订单（如果有）
+        ")",
+        "OR r.parent_id = #{reviewId}",  // 直接回复
+        "OR r.id IN (",  // 原始评论（如果当前是回复）
+        "    SELECT parent_id",
+        "    FROM reviews",
+        "    WHERE id = #{reviewId}",
+        "    AND parent_id IS NOT NULL",
+        ")",
+        "OR r.parent_id IN (",  // 同一原始评论下的其他回复
+        "    SELECT parent_id",
+        "    FROM reviews",
+        "    WHERE id = #{reviewId}",
+        "    AND parent_id IS NOT NULL",
+        ")",
+        "ORDER BY r.create_time ASC"
+    })
+    List<Review> findReviewAndAllReplies(Long reviewId);
 } 

@@ -157,4 +157,11 @@ public interface OrderService {
 
     Order getOrderById(Long orderId);
     void updateOrder(Order order);
+
+    /**
+     * 根据订单状态查询订单
+     * @param status 订单状态
+     * @return 订单列表
+     */
+    List<Order> findByStatus(Integer status);
 } 

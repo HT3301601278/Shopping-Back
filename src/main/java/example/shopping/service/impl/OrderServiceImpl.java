@@ -448,6 +448,11 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(order);
     }
 
+    @Override
+    public List<Order> findByStatus(Integer status) {
+        return orderMapper.findByStatus(status);
+    }
+
     /**
      * 生成订单编号
      * @return 订单编号

@@ -22,7 +22,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/orders")
-@PreAuthorize("hasRole('USER')")
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class OrderController {
 
     @Autowired
@@ -77,8 +77,14 @@ public class OrderController {
         if (order == null) {
             return Result.error("订单不存在");
         }
-        // 验证订单所属
-        if (!order.getUserId().equals(getCurrentUserId())) {
+        
+        // 获取当前用户角色
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                
+        // 如果不是管理员，验证订单所属
+        if (!isAdmin && !order.getUserId().equals(getCurrentUserId())) {
             return Result.error("无权查看此订单");
         }
         return Result.success(order);
@@ -91,8 +97,19 @@ public class OrderController {
      */
     @GetMapping("/status/{status}")
     public Result<List<Order>> getOrdersByStatus(@PathVariable Integer status) {
-        Long userId = getCurrentUserId();
-        return Result.success(orderService.findByUserIdAndStatus(userId, status));
+        // 获取当前用户角色
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                
+        if (isAdmin) {
+            // 管理员可以查看所有订单
+            return Result.success(orderService.findByStatus(status));
+        } else {
+            // 普通用户只能查看自己的订单
+            Long userId = getCurrentUserId();
+            return Result.success(orderService.findByUserIdAndStatus(userId, status));
+        }
     }
 
     /**

@@ -73,7 +73,6 @@ public class FileController {
      * 上传评价图片
      */
     @PostMapping("/reviews")
-    @PreAuthorize("hasRole('USER')")
     public Result<String> uploadReviewImage(@RequestParam("file") MultipartFile file) {
         validateImageFile(file);
         String fileUrl = fileStorageService.store(file, "reviews");

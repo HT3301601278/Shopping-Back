@@ -213,6 +213,40 @@ public class ReviewController {
         return Result.success(stats);
     }
 
+    /**
+     * 获取商家的用户评论列表（仅type=0的评论）
+     * @param productId 商品ID
+     * @return 评论列表
+     */
+    @GetMapping("/product/{productId}/user-reviews")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public Result<List<Review>> getMerchantUserReviews(@PathVariable Long productId) {
+        List<Review> allReviews = reviewService.findByProductIdForMerchant(productId, getCurrentUserId());
+        List<Review> userReviews = allReviews.stream()
+                .filter(review -> review.getType() == 0)
+                .collect(java.util.stream.Collectors.toList());
+        return Result.success(userReviews);
+    }
+
+    /**
+     * 获取评论的完整上下文（包括原始评论和所有相关回复）
+     * @param reviewId 评论ID
+     * @return 评论及其上下文
+     */
+    @GetMapping("/{reviewId}/full-context")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public Result<List<Review>> getReviewFullContext(@PathVariable Long reviewId) {
+        // 验证当前商家是否有权限查看该评论
+        Review review = reviewService.findById(reviewId);
+        if (review == null) {
+            return Result.error("评论不存在");
+        }
+        
+        // 获取评论的完整上下文
+        List<Review> context = reviewService.findReviewAndAllReplies(reviewId);
+        return Result.success(context);
+    }
+
     // 工具方法：获取当前登录用户ID
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -5,10 +5,12 @@ import example.shopping.dto.ReviewDTO;
 import example.shopping.entity.Order;
 import example.shopping.entity.Product;
 import example.shopping.entity.Review;
+import example.shopping.entity.Store;
 import example.shopping.exception.BusinessException;
 import example.shopping.mapper.OrderMapper;
 import example.shopping.mapper.ProductMapper;
 import example.shopping.mapper.ReviewMapper;
+import example.shopping.mapper.StoreMapper;
 import example.shopping.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,9 @@ public class ReviewServiceImpl implements ReviewService {
     
     @Autowired
     private ProductMapper productMapper;
+
+    @Autowired
+    private StoreMapper storeMapper;
 
     @Override
     @Transactional
@@ -255,14 +260,20 @@ public class ReviewServiceImpl implements ReviewService {
             throw new BusinessException("评论不存在");
         }
         
-        // 检查商品是否属于该商家
+        // 检查商品是否存在
         Product product = productMapper.findById(review.getProductId());
         if (product == null) {
             throw new BusinessException("商品不存在");
         }
         
-        // 验证商家权限
-        if (!product.getStoreId().equals(merchantId)) {
+        // 获取店铺信息
+        Store store = storeMapper.findById(product.getStoreId());
+        if (store == null) {
+            throw new BusinessException("店铺不存在");
+        }
+        
+        // 验证商家权限（检查店铺是否属于该商家）
+        if (!store.getUserId().equals(merchantId)) {
             throw new BusinessException("无权操作此评论");
         }
         

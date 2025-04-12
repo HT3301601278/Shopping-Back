@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 客服控制器
@@ -62,14 +63,30 @@ public class CustomerServiceController {
     /**
      * 获取店铺的会话列表
      * @param storeId 店铺ID
+     * @param page 页码（从1开始）
+     * @param size 每页大小
      * @return 店铺的会话列表
      */
     @GetMapping("/sessions/store/{storeId}")
     @PreAuthorize("hasRole('MERCHANT')")
-    public Result<List<Map<String, Object>>> getStoreSessions(@PathVariable Long storeId) {
+    public Result<Map<String, Object>> getStoreSessions(
+            @PathVariable Long storeId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
         // 验证当前用户是否为店铺所有者
         validateStoreOwner(storeId);
-        return Result.success(customerService.findSessionsByStoreId(storeId));
+        
+        // 计算总数
+        int total = customerService.getSessionCount(storeId);
+        
+        // 获取分页数据
+        List<Map<String, Object>> sessions = customerService.findSessionsByStoreId(storeId, page, size);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", total);
+        result.put("sessions", sessions);
+        
+        return Result.success(result);
     }
 
     /**

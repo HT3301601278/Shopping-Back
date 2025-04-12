@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * 店铺控制器
@@ -77,10 +78,26 @@ public class StoreController {
      * @return 创建的店铺
      */
     @PostMapping
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER', 'MERCHANT')")
     public Result<Store> createStore(@Valid @RequestBody Store store) {
         // 从当前登录用户获取用户ID
         Long userId = getCurrentUserId();
+        
+        // 检查用户已有的店铺数量
+        int storeCount = storeService.countStoresByUserId(userId);
+        if (storeCount >= 10) { // 设置每个用户最多可以创建10个店铺
+            throw new BusinessException("已达到最大店铺数量限制（10个）");
+        }
+        
+        // 检查是否有正在审核中的店铺
+        int pendingCount = storeService.countStoresByUserIdAndStatus(userId, 0);
+        if (pendingCount > 0) {
+            throw new BusinessException("您还有店铺正在审核中，请等待审核完成后再创建新店铺");
+        }
+        
+        // 设置店铺状态为待审核
+        store.setStatus(0);
+        
         return Result.success(storeService.create(userId, store), "店铺创建成功，等待审核");
     }
 
@@ -154,14 +171,69 @@ public class StoreController {
     }
 
     /**
-     * 获取当前登录用户的店铺信息
+     * 获取当前登录商家的所有店铺
+     * @return 店铺列表
+     */
+    @GetMapping("/my-stores")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public Result<List<Store>> getMyStores() {
+        Long userId = getCurrentUserId();
+        return Result.success(storeService.findByUserId(userId));
+    }
+
+    /**
+     * 获取当前登录商家的所有正常营业的店铺
+     * @return 店铺列表
+     */
+    @GetMapping("/my-stores/active")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public Result<List<Store>> getMyActiveStores() {
+        Long userId = getCurrentUserId();
+        return Result.success(storeService.findActiveStoresByUserId(userId));
+    }
+
+    /**
+     * 获取当前登录商家指定状态的店铺
+     * @param status 店铺状态（0：待审核，1：正常，2：已关闭，3：审核未通过）
+     * @return 店铺列表
+     */
+    @GetMapping("/my-stores/status/{status}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public Result<List<Store>> getMyStoresByStatus(@PathVariable Integer status) {
+        Long userId = getCurrentUserId();
+        return Result.success(storeService.findStoresByUserIdAndStatus(userId, status));
+    }
+
+    /**
+     * 获取当前登录商家的店铺统计信息
+     * @return 店铺统计信息
+     */
+    @GetMapping("/my-stores/stats")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public Result<Map<String, Object>> getMyStoresStats() {
+        Long userId = getCurrentUserId();
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("total", storeService.countStoresByUserId(userId));
+        stats.put("pending", storeService.countStoresByUserIdAndStatus(userId, 0));
+        stats.put("active", storeService.countStoresByUserIdAndStatus(userId, 1));
+        stats.put("closed", storeService.countStoresByUserIdAndStatus(userId, 2));
+        stats.put("rejected", storeService.countStoresByUserIdAndStatus(userId, 3));
+        return Result.success(stats);
+    }
+
+    /**
+     * 获取当前登录商家的默认店铺（第一个正常营业的店铺）
      * @return 店铺信息
      */
     @GetMapping("/my-store")
     @PreAuthorize("hasRole('MERCHANT')")
     public Result<Store> getMyStore() {
         Long userId = getCurrentUserId();
-        return Result.success(storeService.findByUserId(userId));
+        List<Store> activeStores = storeService.findActiveStoresByUserId(userId);
+        if (activeStores.isEmpty()) {
+            throw new BusinessException("没有找到正常营业的店铺");
+        }
+        return Result.success(activeStores.get(0));
     }
 
     // 工具方法：获取当前登录用户ID

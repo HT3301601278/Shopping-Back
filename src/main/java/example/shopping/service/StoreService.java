@@ -34,11 +34,41 @@ public interface StoreService {
     Store findById(Long id);
     
     /**
-     * 根据用户ID查询店铺
+     * 根据用户ID查询所有店铺
      * @param userId 用户ID
-     * @return 店铺信息
+     * @return 店铺列表
      */
-    Store findByUserId(Long userId);
+    List<Store> findByUserId(Long userId);
+    
+    /**
+     * 根据用户ID查询所有有效店铺（已审核通过的）
+     * @param userId 用户ID
+     * @return 店铺列表
+     */
+    List<Store> findActiveStoresByUserId(Long userId);
+    
+    /**
+     * 根据用户ID和店铺状态查询店铺
+     * @param userId 用户ID
+     * @param status 店铺状态（0：待审核，1：正常，2：已关闭，3：审核未通过）
+     * @return 店铺列表
+     */
+    List<Store> findStoresByUserIdAndStatus(Long userId, Integer status);
+    
+    /**
+     * 统计商家名下的店铺数量
+     * @param userId 用户ID
+     * @return 店铺数量
+     */
+    int countStoresByUserId(Long userId);
+    
+    /**
+     * 统计商家名下指定状态的店铺数量
+     * @param userId 用户ID
+     * @param status 店铺状态
+     * @return 店铺数量
+     */
+    int countStoresByUserIdAndStatus(Long userId, Integer status);
     
     /**
      * 查询所有店铺

@@ -75,6 +75,15 @@ public interface CustomerServiceInterface {
     List<Map<String, Object>> findSessionsByStoreId(Long storeId);
     
     /**
+     * 查询店铺的会话列表（分页）
+     * @param storeId 店铺ID
+     * @param page 页码（从1开始）
+     * @param size 每页大小
+     * @return 会话列表
+     */
+    List<Map<String, Object>> findSessionsByStoreId(Long storeId, int page, int size);
+    
+    /**
      * 查询用户与店铺的进行中会话
      * @param userId 用户ID
      * @param storeId 店铺ID

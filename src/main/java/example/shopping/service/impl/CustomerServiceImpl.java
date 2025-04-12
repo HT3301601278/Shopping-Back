@@ -168,9 +168,8 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
             throw new BusinessException("会话不存在");
         }
         
-        // 标记对方发送的消息为已读
-        Integer otherFromType = (fromType == 0) ? 1 : 0;
-        return messageMapper.updateReadStatusBySessionIdAndFromType(sessionId, otherFromType, true) > 0;
+        // 直接标记指定发送方类型的消息为已读
+        return messageMapper.updateReadStatusBySessionIdAndFromType(sessionId, fromType, true) > 0;
     }
 
     @Override

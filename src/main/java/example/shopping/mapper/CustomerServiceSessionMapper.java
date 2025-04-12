@@ -183,4 +183,14 @@ public interface CustomerServiceSessionMapper {
                             @Param("complaintResult") String complaintResult,
                             @Param("isPenalty") Boolean isPenalty,
                             @Param("penaltyContent") String penaltyContent);
+    
+    /**
+     * 根据店铺ID查询会话（分页）
+     * @param storeId 店铺ID
+     * @param offset 偏移量
+     * @param limit 数量限制
+     * @return 会话列表
+     */
+    @Select("SELECT * FROM customer_service_sessions WHERE store_id = #{storeId} ORDER BY update_time DESC LIMIT #{offset}, #{limit}")
+    List<CustomerServiceSession> findByStoreIdWithPage(@Param("storeId") Long storeId, @Param("offset") int offset, @Param("limit") int limit);
 } 

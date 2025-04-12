@@ -196,6 +196,14 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
     }
 
     @Override
+    public List<Map<String, Object>> findSessionsByStoreId(Long storeId, int page, int size) {
+        // 计算偏移量
+        int offset = (page - 1) * size;
+        List<CustomerServiceSession> sessions = sessionMapper.findByStoreIdWithPage(storeId, offset, size);
+        return sessions.stream().map(this::convertSessionToMap).collect(Collectors.toList());
+    }
+
+    @Override
     public CustomerServiceSession findActiveSession(Long userId, Long storeId) {
         return sessionMapper.findActiveByUserIdAndStoreId(userId, storeId);
     }
@@ -305,48 +313,34 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
     private Map<String, Object> convertSessionToMap(CustomerServiceSession session) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", session.getId());
-        map.put("userId", session.getUserId());
         map.put("storeId", session.getStoreId());
-        map.put("status", session.getStatus());
-        map.put("startTime", session.getStartTime());
-        map.put("endTime", session.getEndTime());
-        map.put("evaluation", session.getEvaluation());
-        map.put("remark", session.getRemark());
-        map.put("createTime", session.getCreateTime());
-        map.put("updateTime", session.getUpdateTime());
         
-        // 获取用户信息
-        User user = userMapper.findById(session.getUserId());
-        if (user != null) {
-            Map<String, Object> userMap = new HashMap<>();
-            userMap.put("id", user.getId());
-            userMap.put("username", user.getUsername());
-            userMap.put("avatar", user.getAvatar());
-            map.put("user", userMap);
-        }
-        
-        // 获取店铺信息
+        // 获取店铺名称
         Store store = storeMapper.findById(session.getStoreId());
-        if (store != null) {
-            Map<String, Object> storeMap = new HashMap<>();
-            storeMap.put("id", store.getId());
-            storeMap.put("name", store.getName());
-            storeMap.put("logo", store.getLogo());
-            map.put("store", storeMap);
-        }
+        map.put("storeName", store != null ? store.getName() : null);
         
-        // 获取最近一条消息
+        map.put("userId", session.getUserId());
+        
+        // 获取用户名
+        User user = userMapper.findById(session.getUserId());
+        map.put("username", user != null ? user.getUsername() : null);
+        
+        // 获取最后一条消息
         List<CustomerServiceMessage> messages = messageMapper.findBySessionId(session.getId());
         if (messages != null && !messages.isEmpty()) {
             CustomerServiceMessage lastMessage = messages.get(messages.size() - 1);
-            map.put("lastMessage", lastMessage);
+            Map<String, Object> lastMessageMap = new HashMap<>();
+            lastMessageMap.put("content", lastMessage.getContent());
+            lastMessageMap.put("fromType", lastMessage.getFromType());
+            lastMessageMap.put("createTime", lastMessage.getCreateTime());
+            map.put("lastMessage", lastMessageMap);
         }
         
-        // 获取未读消息数
-        int userUnreadCount = messageMapper.countUnreadBySessionIdAndFromType(session.getId(), 1); // 商家发送的未读消息
-        int storeUnreadCount = messageMapper.countUnreadBySessionIdAndFromType(session.getId(), 0); // 用户发送的未读消息
-        map.put("userUnreadCount", userUnreadCount);
-        map.put("storeUnreadCount", storeUnreadCount);
+        // 获取店铺未读消息数
+        map.put("unreadCount", messageMapper.countUnreadBySessionIdAndFromType(session.getId(), 0));  // 用户发送的未读消息
+        
+        map.put("status", session.getStatus());
+        map.put("updateTime", session.getUpdateTime());
         
         return map;
     }

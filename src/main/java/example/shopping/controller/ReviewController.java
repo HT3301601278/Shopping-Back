@@ -244,23 +244,38 @@ public class ReviewController {
     }
 
     /**
-     * 获取评论的完整上下文（包括原始评论和所有相关回复）
+     * 获取评论的完整上下文（包括原始评论和所有相关回复，不包括隐藏的评论）
      *
      * @param reviewId 评论ID
      * @return 评论及其上下文
      */
     @GetMapping("/{reviewId}/full-context")
-    @PreAuthorize("hasRole('MERCHANT')")
     public Result<List<Review>> getReviewFullContext(@PathVariable Long reviewId) {
-        // 验证当前商家是否有权限查看该评论
-        Review review = reviewService.findById(reviewId);
-        if (review == null) {
-            return Result.error("评论不存在");
-        }
+        List<Review> allReplies = reviewService.findReviewAndAllReplies(reviewId);
+        // 过滤掉隐藏状态(status=2)的评论
+        List<Review> visibleReplies = allReplies.stream()
+                .filter(review -> review.getStatus() != 2)
+                .collect(java.util.stream.Collectors.toList());
+        return Result.success(visibleReplies);
+    }
 
-        // 获取评论的完整上下文
-        List<Review> context = reviewService.findReviewAndAllReplies(reviewId);
-        return Result.success(context);
+    /**
+     * 获取商品的所有用户评论（只返回type=0的用户评论）
+     *
+     * @param productId 商品ID
+     * @return 评论列表
+     */
+    @GetMapping("/product/{productId}/all-reviews")
+    public Result<List<Review>> getAllProductReviews(@PathVariable Long productId) {
+        // 获取评论列表（已审核通过的评论）
+        List<Review> reviews = reviewService.findByProductIdAndStatus(productId, 0);
+        
+        // 只返回type=0的用户评论
+        List<Review> userReviews = reviews.stream()
+                .filter(review -> review.getType() == 0)
+                .collect(java.util.stream.Collectors.toList());
+
+        return Result.success(userReviews);
     }
 
     // 工具方法：获取当前登录用户ID

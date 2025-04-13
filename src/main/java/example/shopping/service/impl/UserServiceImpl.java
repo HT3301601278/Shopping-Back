@@ -81,6 +81,8 @@ public class UserServiceImpl implements UserService {
         user.setUsername(registerDTO.getUsername());
         user.setPassword(registerDTO.getPassword());
         user.setPhone(registerDTO.getPhone());
+        user.setName(registerDTO.getName());
+        user.setAvatar(registerDTO.getAvatar());
         user.setRole("ROLE_USER"); // 默认为普通用户角色
         user.setStatus(1); // 1-启用
         user.setCreateTime(new Date());

@@ -5,6 +5,7 @@ import example.shopping.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -85,31 +86,34 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-            // 关闭CSRF
-            .csrf().disable()
-            // 不使用session
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeRequests()
-            // 登录注册接口允许匿名访问
-            .antMatchers("/api/auth/**").permitAll()
-            // 静态资源放行
-            .antMatchers("/", "/*.html", "/favicon.ico", "/**/*.html", "/**/*.css", "/**/*.js", "/images/**").permitAll()
-            // 允许对商品的GET请求
-            .antMatchers("/api/products/**").permitAll()
-            // 允许对分类的GET请求
-            .antMatchers("/api/categories/**").permitAll()
-            // 允许访问上传的文件
-            .antMatchers("/uploads/**").permitAll()
-            // 允许上传头像
-            .antMatchers("/api/files/avatars").permitAll()
-            // 除上面外的所有请求全部需要鉴权认证
-            .anyRequest().authenticated()
-            .and()
-            // 配置自定义异常处理
-            .exceptionHandling()
-            .authenticationEntryPoint(authenticationEntryPoint())
-            .accessDeniedHandler(accessDeniedHandler());
+                // 关闭CSRF
+                .csrf().disable()
+                // 不使用session
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authorizeRequests()
+                // 登录注册接口允许匿名访问
+                .antMatchers("/api/auth/**").permitAll()
+                // 静态资源放行
+                .antMatchers("/", "/*.html", "/favicon.ico", "/**/*.html", "/**/*.css", "/**/*.js", "/images/**").permitAll()
+                // 允许对商品的GET请求
+                .antMatchers("/api/products/**").permitAll()
+                // 允许对分类的GET请求
+                .antMatchers("/api/categories/**").permitAll()
+                // 允许访问上传的文件
+                .antMatchers("/uploads/**").permitAll()
+                // 允许上传头像
+                .antMatchers("/api/files/avatars").permitAll()
+                // 允许获取显示中的公告列表和公告详情
+                .antMatchers(HttpMethod.GET, "/api/announcements").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/announcements/{id}").permitAll()
+                // 除上面外的所有请求全部需要鉴权认证
+                .anyRequest().authenticated()
+                .and()
+                // 配置自定义异常处理
+                .exceptionHandling()
+                .authenticationEntryPoint(authenticationEntryPoint())
+                .accessDeniedHandler(accessDeniedHandler());
 
         // 添加JWT过滤器
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

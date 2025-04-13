@@ -22,6 +22,7 @@ public class CategoryController {
 
     /**
      * 获取所有分类
+     *
      * @return 分类列表
      */
     @GetMapping
@@ -31,6 +32,7 @@ public class CategoryController {
 
     /**
      * 获取树形结构的分类
+     *
      * @return 树形结构的分类数据
      */
     @GetMapping("/tree")
@@ -40,6 +42,7 @@ public class CategoryController {
 
     /**
      * 根据ID获取分类
+     *
      * @param id 分类ID
      * @return 分类信息
      */
@@ -50,6 +53,7 @@ public class CategoryController {
 
     /**
      * 获取根分类
+     *
      * @return 根分类列表
      */
     @GetMapping("/roots")
@@ -59,6 +63,7 @@ public class CategoryController {
 
     /**
      * 获取子分类
+     *
      * @param parentId 父分类ID
      * @return 子分类列表
      */
@@ -69,6 +74,7 @@ public class CategoryController {
 
     /**
      * 添加分类
+     *
      * @param category 分类信息
      * @return 添加的分类
      */
@@ -80,7 +86,8 @@ public class CategoryController {
 
     /**
      * 更新分类
-     * @param id 分类ID
+     *
+     * @param id       分类ID
      * @param category 分类信息
      * @return 更新后的分类
      */
@@ -93,6 +100,7 @@ public class CategoryController {
 
     /**
      * 删除分类
+     *
      * @param id 分类ID
      * @return 是否删除成功
      */
@@ -101,4 +109,4 @@ public class CategoryController {
     public Result<Boolean> deleteCategory(@PathVariable Long id) {
         return Result.success(categoryService.delete(id), "删除分类成功");
     }
-} 
+}

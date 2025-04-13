@@ -1,16 +1,15 @@
 package example.shopping.service.impl;
 
+import example.shopping.dto.SearchHistoryDTO;
 import example.shopping.entity.Product;
 import example.shopping.entity.Store;
 import example.shopping.entity.User;
-import example.shopping.entity.SearchHistory;
 import example.shopping.exception.BusinessException;
 import example.shopping.mapper.ProductMapper;
 import example.shopping.service.ProductService;
-import example.shopping.service.StoreService;
 import example.shopping.service.SearchHistoryService;
+import example.shopping.service.StoreService;
 import example.shopping.service.UserService;
-import example.shopping.dto.SearchHistoryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,13 +30,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductMapper productMapper;
-    
+
     @Autowired
     private StoreService storeService;
 
     @Autowired
     private SearchHistoryService searchHistoryService;
-    
+
     @Autowired
     private UserService userService;
 
@@ -65,13 +64,13 @@ public class ProductServiceImpl implements ProductService {
     public Map<String, Object> findByPage(int pageNum, int pageSize) {
         int offset = (pageNum - 1) * pageSize;
         List<Product> products = productMapper.findByPage(offset, pageSize);
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("list", products);
         result.put("pageNum", pageNum);
         result.put("pageSize", pageSize);
         // TODO: 添加总数统计
-        
+
         return result;
     }
 
@@ -83,13 +82,13 @@ public class ProductServiceImpl implements ProductService {
         if (store == null) {
             throw new BusinessException("店铺不存在");
         }
-        
+
         // 检查店铺审核状态
         if (store.getStatus() != 1) {
             String message = store.getStatus() == 0 ? "店铺正在审核中" : "店铺已关闭";
             throw new BusinessException(message + "，无法添加商品");
         }
-        
+
         // 设置默认值
         if (product.getStatus() == null) {
             product.setStatus(1); // 1-上架
@@ -100,11 +99,11 @@ public class ProductServiceImpl implements ProductService {
         if (product.getRating() == null) {
             product.setRating(5.0); // 默认5星
         }
-        
+
         Date now = new Date();
         product.setCreateTime(now);
         product.setUpdateTime(now);
-        
+
         productMapper.insert(product);
         return product;
     }
@@ -116,10 +115,10 @@ public class ProductServiceImpl implements ProductService {
         if (existingProduct == null) {
             throw new BusinessException("商品不存在");
         }
-        
+
         product.setUpdateTime(new Date());
         productMapper.update(product);
-        
+
         return productMapper.findById(product.getId());
     }
 
@@ -130,7 +129,7 @@ public class ProductServiceImpl implements ProductService {
         if (product == null) {
             throw new BusinessException("商品不存在");
         }
-        
+
         return productMapper.deleteById(id) > 0;
     }
 
@@ -140,12 +139,12 @@ public class ProductServiceImpl implements ProductService {
         if (increment <= 0) {
             throw new BusinessException("销量增量必须大于0");
         }
-        
+
         Product product = productMapper.findById(id);
         if (product == null) {
             throw new BusinessException("商品不存在");
         }
-        
+
         return productMapper.updateSales(id, increment) > 0;
     }
 
@@ -155,16 +154,16 @@ public class ProductServiceImpl implements ProductService {
         if (decrement <= 0) {
             throw new BusinessException("库存减少量必须大于0");
         }
-        
+
         Product product = productMapper.findById(id);
         if (product == null) {
             throw new BusinessException("商品不存在");
         }
-        
+
         if (product.getStock() < decrement) {
             throw new BusinessException("商品库存不足");
         }
-        
+
         return productMapper.decreaseStock(id, decrement) > 0;
     }
 
@@ -173,15 +172,15 @@ public class ProductServiceImpl implements ProductService {
         if (keyword == null || keyword.trim().isEmpty()) {
             throw new BusinessException("搜索关键字不能为空");
         }
-        
+
         List<Product> products = productMapper.search(keyword);
-        
+
         // 获取当前登录用户ID
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String username = userDetails.getUsername();
-            
+
             User user = userService.findByUsername(username);
             if (user != null) {
                 // 保存搜索历史
@@ -191,7 +190,7 @@ public class ProductServiceImpl implements ProductService {
                 searchHistoryService.add(user.getId(), searchHistoryDTO);
             }
         }
-        
+
         return products;
     }
 
@@ -200,7 +199,7 @@ public class ProductServiceImpl implements ProductService {
         if (limit <= 0) {
             limit = 10; // 默认返回10个
         }
-        
+
         return productMapper.findHotProducts(limit);
     }
 
@@ -209,7 +208,7 @@ public class ProductServiceImpl implements ProductService {
         if (limit <= 0) {
             limit = 10; // 默认返回10个
         }
-        
+
         return productMapper.findNewProducts(limit);
     }
-} 
+}

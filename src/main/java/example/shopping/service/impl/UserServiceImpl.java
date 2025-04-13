@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * 用户服务实现类
@@ -146,7 +145,7 @@ public class UserServiceImpl implements UserService {
         updateUser.setId(userId);
         updateUser.setPassword(newPassword);
         updateUser.setUpdateTime(new Date());
-        
+
         return userMapper.update(updateUser) > 0;
     }
 
@@ -176,7 +175,7 @@ public class UserServiceImpl implements UserService {
         updateUser.setUpdateTime(new Date());
 
         userMapper.update(updateUser);
-        
+
         return userMapper.findById(userId);
     }
 
@@ -190,4 +189,4 @@ public class UserServiceImpl implements UserService {
         userMapper.update(user);
         return true;
     }
-} 
+}

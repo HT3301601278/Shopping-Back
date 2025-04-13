@@ -30,10 +30,10 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Autowired
     private ReviewMapper reviewMapper;
-    
+
     @Autowired
     private OrderMapper orderMapper;
-    
+
     @Autowired
     private ProductMapper productMapper;
 
@@ -59,30 +59,30 @@ public class ReviewServiceImpl implements ReviewService {
         if (order == null) {
             throw new BusinessException("订单不存在");
         }
-        
+
         // 检查订单是否属于该用户
         if (!order.getUserId().equals(userId)) {
             throw new BusinessException("无权操作此订单");
         }
-        
+
         // 检查订单状态是否允许评价
         int status = order.getStatus();
-        if (status != 3 && status != 5 && status != 6 && status != 7) { 
+        if (status != 3 && status != 5 && status != 6 && status != 7) {
             throw new BusinessException("当前订单状态不可评价");
         }
-        
+
         // 检查是否已经评价过
         List<Review> existingReviews = reviewMapper.findByOrderId(reviewDTO.getOrderId());
         if (existingReviews != null && !existingReviews.isEmpty()) {
             throw new BusinessException("该订单已评价过");
         }
-        
+
         // 检查商品是否存在
         Product product = productMapper.findById(reviewDTO.getProductId());
         if (product == null) {
             throw new BusinessException("商品不存在");
         }
-        
+
         // 创建评论
         Review review = new Review();
         review.setProductId(reviewDTO.getProductId());
@@ -90,32 +90,32 @@ public class ReviewServiceImpl implements ReviewService {
         review.setOrderId(reviewDTO.getOrderId());
         review.setContent(reviewDTO.getContent());
         review.setRating(reviewDTO.getRating());
-        
+
         // 处理图片
         if (reviewDTO.getImages() != null && !reviewDTO.getImages().isEmpty()) {
             review.setImages(JSON.toJSONString(reviewDTO.getImages()));
         }
-        
+
         // 设置评论类型
         review.setType(reviewDTO.getType() != null ? reviewDTO.getType() : 0); // 默认为用户评论
-        
+
         // 设置默认状态
         review.setStatus(0); // 0-审核中
         review.setIsTop(false);
-        
+
         review.setCreateTime(LocalDateTime.now());
         review.setUpdateTime(new Date());
-        
+
         reviewMapper.insert(review);
-        
+
         // 更新商品评分
         updateProductRating(reviewDTO.getProductId());
-        
+
         // 更新订单状态为已评价
         order.setStatus(8); // 8-已评价
         order.setUpdateTime(new Date());
         orderMapper.update(order);
-        
+
         return review;
     }
 
@@ -158,13 +158,13 @@ public class ReviewServiceImpl implements ReviewService {
     public Map<String, Object> findByPage(int pageNum, int pageSize) {
         int offset = (pageNum - 1) * pageSize;
         List<Review> reviews = reviewMapper.findByPage(offset, pageSize);
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("list", reviews);
         result.put("pageNum", pageNum);
         result.put("pageSize", pageSize);
         // TODO: 添加总数统计
-        
+
         return result;
     }
 
@@ -188,17 +188,17 @@ public class ReviewServiceImpl implements ReviewService {
         review.setRating(0); // 回复评论设置评分为0
         review.setStatus(0); // 设置状态为正常显示
         review.setIsTop(false);
-        
+
         // 处理图片
         if (reviewDTO.getImages() != null && !reviewDTO.getImages().isEmpty()) {
             review.setImages(JSON.toJSONString(reviewDTO.getImages()));
         }
-        
+
         review.setCreateTime(LocalDateTime.now());
         review.setUpdateTime(new Date());
-        
+
         reviewMapper.insert(review);
-        
+
         return review;
     }
 
@@ -209,19 +209,19 @@ public class ReviewServiceImpl implements ReviewService {
         if (review == null) {
             throw new BusinessException("评论不存在");
         }
-        
+
         // 只有正常显示的评论可以提交审核
         if (review.getStatus() != 0) {
             throw new BusinessException("该评论当前状态不可提交审核");
         }
-        
+
         // 更新评论状态为待审核
         review.setStatus(1);
         review.setReason(reason);
         review.setUpdateTime(new Date());
-        
+
         reviewMapper.updateStatus(id, 1, reason);
-        
+
         return review;
     }
 
@@ -237,18 +237,18 @@ public class ReviewServiceImpl implements ReviewService {
         if (review == null) {
             throw new BusinessException("评论不存在");
         }
-        
+
         if (status != 1 && status != 2) {
             throw new BusinessException("状态值无效");
         }
-        
+
         boolean result = reviewMapper.updateStatus(id, status, review.getReason()) > 0;
-        
+
         // 如果评论状态有变化，更新商品评分
         if (result && review.getStatus() != status) {
             updateProductRating(review.getProductId());
         }
-        
+
         return result;
     }
 
@@ -259,24 +259,24 @@ public class ReviewServiceImpl implements ReviewService {
         if (review == null) {
             throw new BusinessException("评论不存在");
         }
-        
+
         // 检查商品是否存在
         Product product = productMapper.findById(review.getProductId());
         if (product == null) {
             throw new BusinessException("商品不存在");
         }
-        
+
         // 获取店铺信息
         Store store = storeMapper.findById(product.getStoreId());
         if (store == null) {
             throw new BusinessException("店铺不存在");
         }
-        
+
         // 验证商家权限（检查店铺是否属于该商家）
         if (!store.getUserId().equals(merchantId)) {
             throw new BusinessException("无权操作此评论");
         }
-        
+
         return reviewMapper.updateTopStatus(id, isTop) > 0;
     }
 
@@ -287,14 +287,14 @@ public class ReviewServiceImpl implements ReviewService {
         if (review == null) {
             throw new BusinessException("评论不存在");
         }
-        
+
         boolean result = reviewMapper.deleteById(id) > 0;
-        
+
         // 更新商品评分
         if (result) {
             updateProductRating(review.getProductId());
         }
-        
+
         return result;
     }
 
@@ -320,15 +320,15 @@ public class ReviewServiceImpl implements ReviewService {
         if (avgRating == null) {
             avgRating = 5.0; // 默认5星
         }
-        
+
         Product product = productMapper.findById(productId);
         if (product == null) {
             return false;
         }
-        
+
         product.setRating(avgRating);
         product.setUpdateTime(new Date());
-        
+
         return productMapper.update(product) > 0;
     }
-} 
+}

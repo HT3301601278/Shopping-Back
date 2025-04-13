@@ -1,8 +1,8 @@
 package example.shopping.service.impl;
 
-import example.shopping.service.PaymentService;
-import example.shopping.service.OrderService;
 import example.shopping.entity.Order;
+import example.shopping.service.OrderService;
+import example.shopping.service.PaymentService;
 import example.shopping.service.impl.OrderServiceImpl.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,9 +47,9 @@ public class PaymentServiceImpl implements PaymentService {
         if (order == null) {
             throw new RuntimeException("订单不存在");
         }
-        if (order.getStatus() != OrderStatus.PAID.getValue() && 
-            order.getStatus() != OrderStatus.SHIPPED.getValue() &&
-            order.getStatus() != OrderStatus.COMPLETED.getValue()) {
+        if (order.getStatus() != OrderStatus.PAID.getValue() &&
+                order.getStatus() != OrderStatus.SHIPPED.getValue() &&
+                order.getStatus() != OrderStatus.COMPLETED.getValue()) {
             throw new RuntimeException("订单状态不允许申请退款");
         }
 
@@ -86,4 +86,4 @@ public class PaymentServiceImpl implements PaymentService {
         methods.put("CREDIT_CARD", "信用卡");
         return methods;
     }
-} 
+}

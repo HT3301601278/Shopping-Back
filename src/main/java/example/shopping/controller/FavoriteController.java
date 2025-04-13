@@ -31,6 +31,7 @@ public class FavoriteController {
 
     /**
      * 添加收藏
+     *
      * @param productId 商品ID
      * @return 添加的收藏
      */
@@ -43,6 +44,7 @@ public class FavoriteController {
 
     /**
      * 取消收藏
+     *
      * @param productId 商品ID
      * @return 是否取消成功
      */
@@ -54,6 +56,7 @@ public class FavoriteController {
 
     /**
      * 获取收藏列表
+     *
      * @return 收藏列表
      */
     @GetMapping
@@ -64,7 +67,8 @@ public class FavoriteController {
 
     /**
      * 分页获取收藏列表
-     * @param pageNum 页码
+     *
+     * @param pageNum  页码
      * @param pageSize 每页大小
      * @return 分页收藏列表
      */
@@ -78,6 +82,7 @@ public class FavoriteController {
 
     /**
      * 检查是否已收藏
+     *
      * @param productId 商品ID
      * @return 是否已收藏
      */
@@ -89,6 +94,7 @@ public class FavoriteController {
 
     /**
      * 获取商品收藏数
+     *
      * @param productId 商品ID
      * @return 收藏数
      */
@@ -99,6 +105,7 @@ public class FavoriteController {
 
     /**
      * 获取当前登录用户ID
+     *
      * @return 用户ID
      */
     private Long getCurrentUserId() {

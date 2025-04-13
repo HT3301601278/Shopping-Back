@@ -29,12 +29,12 @@ mybatis:
   type-aliases-package: example.shopping.entity
   configuration:
     map-underscore-to-camel-case: true
-    
+
 jwt:
   secret: shopping-secret-key
   expiration: 86400000  # 24小时
   header: Authorization
-  token-prefix: Bearer 
+  token-prefix: Bearer
 
 logging:
   level:
@@ -48,4 +48,4 @@ logging:
 file:
   upload:
     dir: uploads  # 文件上传目录
-    url-prefix: http://localhost:8080/uploads  # 文件访问URL前缀 
+    url-prefix: http://localhost:8080/uploads  # 文件访问URL前缀

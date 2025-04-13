@@ -10,9 +10,9 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class SearchHistoryDTO {
     private Long id;
-    
+
     @NotBlank(message = "搜索关键词不能为空")
     private String keyword;
-    
+
     private Integer resultCount;
-} 
+}

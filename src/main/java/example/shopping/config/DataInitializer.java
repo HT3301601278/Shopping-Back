@@ -261,11 +261,11 @@ public class DataInitializer {
 
                 Store store = new Store();
                 store.setUserId(merchant.getId());
-                store.setName("优质商城" + (i+1) + "号店");
-                store.setLogo("https://example.com/store_logos/logo" + (i+1) + ".jpg");
+                store.setName("优质商城" + (i + 1) + "号店");
+                store.setLogo("https://example.com/store_logos/logo" + (i + 1) + ".jpg");
                 store.setDescription("这是一家专注于提供优质商品的商店，已经经营多年，深受顾客好评。");
-                store.setContactInfo("{\"phone\":\"" + merchant.getPhone() + "\",\"email\":\"store" + (i+1) + "@example.com\"}");
-                store.setLicense("https://example.com/licenses/license" + (i+1) + ".jpg");
+                store.setContactInfo("{\"phone\":\"" + merchant.getPhone() + "\",\"email\":\"store" + (i + 1) + "@example.com\"}");
+                store.setLicense("https://example.com/licenses/license" + (i + 1) + ".jpg");
                 store.setStatus(1); // 正常营业
 
                 entityManager.persist(store);
@@ -319,7 +319,7 @@ public class DataInitializer {
                     product.setStoreId(store.getId());
                     product.setCategoryId(category.getId());
                     product.setPrice(new BigDecimal(String.format("%.2f", 50 + Math.random() * 1000)));
-                    product.setStock(100 + (int)(Math.random() * 900));
+                    product.setStock(100 + (int) (Math.random() * 900));
                     product.setDescription(category.getName() + "类别下的优质商品，性价比高，质量好。");
 
                     // 设置商品图片（多张）
@@ -332,7 +332,7 @@ public class DataInitializer {
                     product.setSpecifications("{\"颜色\":[\"红色\",\"蓝色\",\"黑色\"],\"尺寸\":[\"S\",\"M\",\"L\",\"XL\"]}");
 
                     product.setStatus(1);  // 上架状态
-                    product.setSales((int)(Math.random() * 100));
+                    product.setSales((int) (Math.random() * 100));
                     product.setRating(4.0 + Math.random());  // 4-5之间的评分
 
                     entityManager.persist(product);
@@ -392,42 +392,42 @@ public class DataInitializer {
                         }
 
                         Order order = new Order();
-                        order.setOrderNo("ORD" + System.currentTimeMillis() + (int)(Math.random() * 1000));
+                        order.setOrderNo("ORD" + System.currentTimeMillis() + (int) (Math.random() * 1000));
                         order.setUserId(user.getId());
                         order.setStoreId(store.getId());
 
                         // 设置订单项（可能包含多个商品）
-                        int quantity = 1 + (int)(Math.random() * 3);
+                        int quantity = 1 + (int) (Math.random() * 3);
                         BigDecimal itemAmount = product.getPrice().multiply(new BigDecimal(quantity));
 
                         order.setItems("[{\"productId\":" + product.getId() +
-                                      ",\"productName\":\"" + product.getName() +
-                                      "\",\"price\":" + product.getPrice() +
-                                      ",\"quantity\":" + quantity +
-                                      ",\"amount\":" + itemAmount + "}]");
+                                ",\"productName\":\"" + product.getName() +
+                                "\",\"price\":" + product.getPrice() +
+                                ",\"quantity\":" + quantity +
+                                ",\"amount\":" + itemAmount + "}]");
 
                         order.setTotalAmount(itemAmount);
 
                         // 设置收货地址
                         order.setAddressInfo("{\"name\":\"收货人" + user.getId() +
-                                            "\",\"phone\":\"" + user.getPhone() +
-                                            "\",\"address\":\"XX省XX市XX区XX街道XX号\"}");
+                                "\",\"phone\":\"" + user.getPhone() +
+                                "\",\"address\":\"XX省XX市XX区XX街道XX号\"}");
 
                         // 随机设置支付方式
                         String[] paymentTypes = {"支付宝", "微信", "银行卡"};
-                        order.setPaymentType(paymentTypes[(int)(Math.random() * paymentTypes.length)]);
+                        order.setPaymentType(paymentTypes[(int) (Math.random() * paymentTypes.length)]);
 
                         // 随机设置订单状态
-                        int status = (int)(Math.random() * 5); // 0-未支付, 1-已支付, 2-已发货, 3-已完成, 4-已取消
+                        int status = (int) (Math.random() * 5); // 0-未支付, 1-已支付, 2-已发货, 3-已完成, 4-已取消
                         order.setStatus(status);
 
                         // 根据状态设置时间
                         if (status >= 1) { // 已支付及以上状态
-                            order.setPaymentTime(new Date(System.currentTimeMillis() - (long)(Math.random() * 86400000))); // 1天内的随机时间
+                            order.setPaymentTime(new Date(System.currentTimeMillis() - (long) (Math.random() * 86400000))); // 1天内的随机时间
                         }
 
                         if (status >= 2) { // 已发货及以上状态
-                            order.setShippingTime(new Date(System.currentTimeMillis() - (long)(Math.random() * 43200000))); // 12小时内的随机时间
+                            order.setShippingTime(new Date(System.currentTimeMillis() - (long) (Math.random() * 43200000))); // 12小时内的随机时间
                         }
 
                         entityManager.persist(order);
@@ -490,27 +490,27 @@ public class DataInitializer {
                     review.setOrderId(order.getId());
 
                     // 随机设置评分(1-5)
-                    int rating = 3 + (int)(Math.random() * 3); // 偏向好评
+                    int rating = 3 + (int) (Math.random() * 3); // 偏向好评
                     review.setRating(rating);
 
                     // 根据评分设置评价内容
                     String[] goodComments = {
-                        "商品质量非常好，物流也很快，很满意的一次购物体验！",
-                        "卖家服务态度好，商品和描述一致，会再次购买！",
-                        "包装很精美，商品质量出乎意料的好，推荐购买！",
-                        "性价比很高的商品，值得购买！"
+                            "商品质量非常好，物流也很快，很满意的一次购物体验！",
+                            "卖家服务态度好，商品和描述一致，会再次购买！",
+                            "包装很精美，商品质量出乎意料的好，推荐购买！",
+                            "性价比很高的商品，值得购买！"
                     };
 
                     String[] normalComments = {
-                        "商品还可以，基本符合预期。",
-                        "质量一般，但价格还算合理。",
-                        "送货速度还行，商品质量中规中矩。"
+                            "商品还可以，基本符合预期。",
+                            "质量一般，但价格还算合理。",
+                            "送货速度还行，商品质量中规中矩。"
                     };
 
                     if (rating >= 4) {
-                        review.setContent(goodComments[(int)(Math.random() * goodComments.length)]);
+                        review.setContent(goodComments[(int) (Math.random() * goodComments.length)]);
                     } else {
-                        review.setContent(normalComments[(int)(Math.random() * normalComments.length)]);
+                        review.setContent(normalComments[(int) (Math.random() * normalComments.length)]);
                     }
 
                     // 设置图片（可能有多张）
@@ -550,19 +550,19 @@ public class DataInitializer {
         // 如果不存在，则创建
         if (count == 0) {
             String[] titles = {
-                "系统维护通知",
-                "新功能上线公告",
-                "618购物节活动公告",
-                "双11购物节即将到来",
-                "关于提高商品质量的通知"
+                    "系统维护通知",
+                    "新功能上线公告",
+                    "618购物节活动公告",
+                    "双11购物节即将到来",
+                    "关于提高商品质量的通知"
             };
 
             String[] contents = {
-                "系统将于2023年6月15日凌晨2:00-4:00进行例行维护，届时系统将暂停使用，请广大用户提前做好准备。",
-                "我们的APP新增了直播购物功能，现在您可以通过直播间实时了解商品信息，与卖家互动，享受更便捷的购物体验。",
-                "618购物节期间，平台将推出多重优惠活动，包括满减、折扣、抢购等，敬请期待！",
-                "双11购物节即将到来，今年我们准备了更多优惠和惊喜，敬请关注平台公告获取最新信息。",
-                "为提高平台商品质量，我们将对所有商家的商品进行严格审核，确保用户能够购买到高质量的商品。"
+                    "系统将于2023年6月15日凌晨2:00-4:00进行例行维护，届时系统将暂停使用，请广大用户提前做好准备。",
+                    "我们的APP新增了直播购物功能，现在您可以通过直播间实时了解商品信息，与卖家互动，享受更便捷的购物体验。",
+                    "618购物节期间，平台将推出多重优惠活动，包括满减、折扣、抢购等，敬请期待！",
+                    "双11购物节即将到来，今年我们准备了更多优惠和惊喜，敬请关注平台公告获取最新信息。",
+                    "为提高平台商品质量，我们将对所有商家的商品进行严格审核，确保用户能够购买到高质量的商品。"
             };
 
             try {
@@ -591,7 +591,7 @@ public class DataInitializer {
                     // 设置创建时间（过去30天内的随机时间）
                     long now = System.currentTimeMillis();
                     long thirtyDaysAgo = now - 30L * 24 * 60 * 60 * 1000;
-                    long randomTime = thirtyDaysAgo + (long)(Math.random() * (now - thirtyDaysAgo));
+                    long randomTime = thirtyDaysAgo + (long) (Math.random() * (now - thirtyDaysAgo));
 
                     Date createTime = new Date(randomTime);
                     announcement.setCreateTime(createTime);
@@ -624,11 +624,11 @@ public class DataInitializer {
 
         // 省份和城市
         String[][] locations = {
-            {"北京市", "朝阳区"},
-            {"上海市", "浦东新区"},
-            {"广东省", "深圳市南山区"},
-            {"浙江省", "杭州市西湖区"},
-            {"四川省", "成都市武侯区"}
+                {"北京市", "朝阳区"},
+                {"上海市", "浦东新区"},
+                {"广东省", "深圳市南山区"},
+                {"浙江省", "杭州市西湖区"},
+                {"四川省", "成都市武侯区"}
         };
 
         // 检查Address表中是否已有数据
@@ -661,8 +661,8 @@ public class DataInitializer {
 
                         // 生成详细地址
                         String detailAddress = (random.nextInt(100) + 1) + "号楼" +
-                                             (random.nextInt(10) + 1) + "0" +
-                                             (random.nextInt(9) + 1) + "室";
+                                (random.nextInt(10) + 1) + "0" +
+                                (random.nextInt(9) + 1) + "室";
                         address.setDetailAddress(detailAddress);
 
                         // 第一个地址设为默认
@@ -685,24 +685,24 @@ public class DataInitializer {
                     StringBuilder addressJson = new StringBuilder("[");
 
                     // 为每个用户创建1-3个收货地址
-                    int userJsonAddressCount = 1 + (int)(Math.random() * 2);
+                    int userJsonAddressCount = 1 + (int) (Math.random() * 2);
 
                     for (int i = 0; i < userJsonAddressCount; i++) {
-                        String[] location = locations[(int)(Math.random() * locations.length)];
+                        String[] location = locations[(int) (Math.random() * locations.length)];
                         String province = location[0];
                         String city = location[1];
 
                         if (i > 0) addressJson.append(",");
 
                         addressJson.append("{")
-                                  .append("\"name\":\"").append(user.getUsername()).append("\",")
-                                  .append("\"phone\":\"").append(user.getPhone()).append("\",")
-                                  .append("\"province\":\"").append(province).append("\",")
-                                  .append("\"city\":\"").append(city).append("\",")
-                                  .append("\"district\":\"某某小区\",")
-                                  .append("\"detailAddress\":\"").append((int)(Math.random() * 100) + 1).append("号楼").append((int)(Math.random() * 10) + 1).append("0").append((int)(Math.random() * 9) + 1).append("室\",")
-                                  .append("\"isDefault\":").append(i == 0 ? "true" : "false")
-                                  .append("}");
+                                .append("\"name\":\"").append(user.getUsername()).append("\",")
+                                .append("\"phone\":\"").append(user.getPhone()).append("\",")
+                                .append("\"province\":\"").append(province).append("\",")
+                                .append("\"city\":\"").append(city).append("\",")
+                                .append("\"district\":\"某某小区\",")
+                                .append("\"detailAddress\":\"").append((int) (Math.random() * 100) + 1).append("号楼").append((int) (Math.random() * 10) + 1).append("0").append((int) (Math.random() * 9) + 1).append("室\",")
+                                .append("\"isDefault\":").append(i == 0 ? "true" : "false")
+                                .append("}");
                     }
 
                     addressJson.append("]");
@@ -928,7 +928,7 @@ public class DataInitializer {
                         // 设置搜索时间为过去7天内的随机时间
                         long now = System.currentTimeMillis();
                         long sevenDaysAgo = now - 7L * 24 * 60 * 60 * 1000;
-                        long randomTime = sevenDaysAgo + (long)(random.nextDouble() * (now - sevenDaysAgo));
+                        long randomTime = sevenDaysAgo + (long) (random.nextDouble() * (now - sevenDaysAgo));
                         searchHistory.setCreateTime(new Date(randomTime));
 
                         entityManager.persist(searchHistory);
@@ -979,22 +979,22 @@ public class DataInitializer {
 
             // 用户常见问题列表
             String[] userQuestions = {
-                "您好，请问这个商品什么时候能到货？",
-                "我想咨询一下这个商品的尺码问题，我身高170cm，体重60kg，应该选什么尺码？",
-                "商品的质量怎么样？耐用吗？",
-                "请问这个商品可以退换吗？",
-                "这个商品的保修期是多久？",
-                "请问有没有优惠活动？"
+                    "您好，请问这个商品什么时候能到货？",
+                    "我想咨询一下这个商品的尺码问题，我身高170cm，体重60kg，应该选什么尺码？",
+                    "商品的质量怎么样？耐用吗？",
+                    "请问这个商品可以退换吗？",
+                    "这个商品的保修期是多久？",
+                    "请问有没有优惠活动？"
             };
 
             // 商家常见回复列表
             String[] merchantReplies = {
-                "您好，我们的商品一般3-5天内到货，请耐心等待。",
-                "您好，根据您提供的身高体重信息，建议您选择M码。",
-                "您好，我们的商品采用优质材料制作，质量有保障，请您放心购买。",
-                "您好，本店所有商品支持7天无理由退换，但需要保持商品的完好无损。",
-                "您好，本商品提供一年的保修期，如有质量问题，可随时联系我们。",
-                "您好，目前店铺正在进行满300减50的活动，欢迎您选购。"
+                    "您好，我们的商品一般3-5天内到货，请耐心等待。",
+                    "您好，根据您提供的身高体重信息，建议您选择M码。",
+                    "您好，我们的商品采用优质材料制作，质量有保障，请您放心购买。",
+                    "您好，本店所有商品支持7天无理由退换，但需要保持商品的完好无损。",
+                    "您好，本商品提供一年的保修期，如有质量问题，可随时联系我们。",
+                    "您好，目前店铺正在进行满300减50的活动，欢迎您选购。"
             };
 
             // 为每个用户创建客服会话
@@ -1015,7 +1015,7 @@ public class DataInitializer {
                         // 设置会话时间为过去30天内的随机时间
                         long now = System.currentTimeMillis();
                         long thirtyDaysAgo = now - 30L * 24 * 60 * 60 * 1000;
-                        long startRandomTime = thirtyDaysAgo + (long)(random.nextDouble() * (now - thirtyDaysAgo));
+                        long startRandomTime = thirtyDaysAgo + (long) (random.nextDouble() * (now - thirtyDaysAgo));
                         Date startTime = new Date(startRandomTime);
                         session.setStartTime(startTime);
 
@@ -1025,7 +1025,7 @@ public class DataInitializer {
 
                         if (isEnded) {
                             // 设置结束时间为开始时间后的10分钟到1小时
-                            long endRandomTime = startRandomTime + (10 * 60 * 1000) + (long)(random.nextDouble() * 50 * 60 * 1000);
+                            long endRandomTime = startRandomTime + (10 * 60 * 1000) + (long) (random.nextDouble() * 50 * 60 * 1000);
                             session.setEndTime(new Date(endRandomTime));
 
                             // 设置评价
@@ -1063,8 +1063,8 @@ public class DataInitializer {
 
         long baseTime = session.getStartTime().getTime();
         long interval = session.getStatus() == 1 && session.getEndTime() != null ?
-                        (session.getEndTime().getTime() - baseTime) / (messageCount + 1) :
-                        5 * 60 * 1000; // 默认5分钟间隔
+                (session.getEndTime().getTime() - baseTime) / (messageCount + 1) :
+                5 * 60 * 1000; // 默认5分钟间隔
 
         for (int i = 0; i < messageCount; i++) {
             try {

@@ -27,12 +27,13 @@ public class SearchHistoryController {
 
     @Autowired
     private SearchHistoryService searchHistoryService;
-    
+
     @Autowired
     private UserService userService;
 
     /**
      * 获取当前用户的搜索历史
+     *
      * @return 搜索历史列表
      */
     @GetMapping
@@ -43,6 +44,7 @@ public class SearchHistoryController {
 
     /**
      * 获取当前用户最近的搜索历史
+     *
      * @param limit 返回数量
      * @return 最近的搜索历史列表
      */
@@ -55,6 +57,7 @@ public class SearchHistoryController {
 
     /**
      * 添加搜索历史
+     *
      * @param searchHistoryDTO 搜索历史信息
      * @return 添加的搜索历史
      */
@@ -66,6 +69,7 @@ public class SearchHistoryController {
 
     /**
      * 删除搜索历史
+     *
      * @param id 搜索历史ID
      * @return 是否删除成功
      */
@@ -77,6 +81,7 @@ public class SearchHistoryController {
 
     /**
      * 清空所有搜索历史
+     *
      * @return 是否清空成功
      */
     @DeleteMapping
@@ -87,6 +92,7 @@ public class SearchHistoryController {
 
     /**
      * 获取当前用户的热门搜索关键词
+     *
      * @param limit 返回数量
      * @return 热门关键词列表
      */
@@ -99,6 +105,7 @@ public class SearchHistoryController {
 
     /**
      * 获取全站热门搜索关键词（可公开访问）
+     *
      * @param limit 返回数量
      * @return 热门关键词列表
      */
@@ -111,17 +118,18 @@ public class SearchHistoryController {
 
     /**
      * 获取当前登录用户ID
+     *
      * @return 用户ID
      */
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        
+
         User user = userService.findByUsername(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
         return user.getId();
     }
-} 
+}

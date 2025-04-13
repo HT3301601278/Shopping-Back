@@ -13,9 +13,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * 店铺控制器
@@ -26,12 +26,13 @@ public class StoreController {
 
     @Autowired
     private StoreService storeService;
-    
+
     @Autowired
     private UserMapper userMapper;
 
     /**
      * 获取所有店铺
+     *
      * @return 店铺列表
      */
     @GetMapping
@@ -41,7 +42,8 @@ public class StoreController {
 
     /**
      * 分页获取店铺
-     * @param pageNum 页码
+     *
+     * @param pageNum  页码
      * @param pageSize 每页大小
      * @return 包含分页信息的店铺列表
      */
@@ -54,6 +56,7 @@ public class StoreController {
 
     /**
      * 根据ID获取店铺
+     *
      * @param id 店铺ID
      * @return 店铺信息
      */
@@ -64,6 +67,7 @@ public class StoreController {
 
     /**
      * 搜索店铺
+     *
      * @param keyword 关键字
      * @return 店铺列表
      */
@@ -74,6 +78,7 @@ public class StoreController {
 
     /**
      * 创建店铺
+     *
      * @param store 店铺信息
      * @return 创建的店铺
      */
@@ -82,28 +87,29 @@ public class StoreController {
     public Result<Store> createStore(@Valid @RequestBody Store store) {
         // 从当前登录用户获取用户ID
         Long userId = getCurrentUserId();
-        
+
         // 检查用户已有的店铺数量
         int storeCount = storeService.countStoresByUserId(userId);
         if (storeCount >= 10) { // 设置每个用户最多可以创建10个店铺
             throw new BusinessException("已达到最大店铺数量限制（10个）");
         }
-        
+
         // 检查是否有正在审核中的店铺
         int pendingCount = storeService.countStoresByUserIdAndStatus(userId, 0);
         if (pendingCount > 0) {
             throw new BusinessException("您还有店铺正在审核中，请等待审核完成后再创建新店铺");
         }
-        
+
         // 设置店铺状态为待审核
         store.setStatus(0);
-        
+
         return Result.success(storeService.create(userId, store), "店铺创建成功，等待审核");
     }
 
     /**
      * 更新店铺信息
-     * @param id 店铺ID
+     *
+     * @param id    店铺ID
      * @param store 店铺信息
      * @return 更新后的店铺
      */
@@ -117,6 +123,7 @@ public class StoreController {
 
     /**
      * 删除店铺
+     *
      * @param id 店铺ID
      * @return 是否删除成功
      */
@@ -128,6 +135,7 @@ public class StoreController {
 
     /**
      * 获取店铺的客服满意度
+     *
      * @param id 店铺ID
      * @return 客服满意度评分
      */
@@ -138,14 +146,15 @@ public class StoreController {
 
     /**
      * 审核店铺 (管理员功能)
-     * @param id 店铺ID
+     *
+     * @param id     店铺ID
      * @param status 状态(0-审核中, 1-正常, 2-关闭)
      * @return 是否审核成功
      */
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public Result<Boolean> auditStore(
-            @PathVariable Long id, 
+            @PathVariable Long id,
             @RequestParam Integer status) {
         boolean result = storeService.updateStatus(id, status);
         String message;
@@ -161,6 +170,7 @@ public class StoreController {
 
     /**
      * 获取待审核的店铺列表 (管理员功能)
+     *
      * @return 待审核的店铺列表
      */
     @GetMapping("/pending")
@@ -172,6 +182,7 @@ public class StoreController {
 
     /**
      * 获取当前登录商家的所有店铺
+     *
      * @return 店铺列表
      */
     @GetMapping("/my-stores")
@@ -183,6 +194,7 @@ public class StoreController {
 
     /**
      * 获取当前登录商家的所有正常营业的店铺
+     *
      * @return 店铺列表
      */
     @GetMapping("/my-stores/active")
@@ -194,6 +206,7 @@ public class StoreController {
 
     /**
      * 获取当前登录商家指定状态的店铺
+     *
      * @param status 店铺状态（0：待审核，1：正常，2：已关闭，3：审核未通过）
      * @return 店铺列表
      */
@@ -206,6 +219,7 @@ public class StoreController {
 
     /**
      * 获取当前登录商家的店铺统计信息
+     *
      * @return 店铺统计信息
      */
     @GetMapping("/my-stores/stats")
@@ -223,6 +237,7 @@ public class StoreController {
 
     /**
      * 获取当前登录商家的默认店铺（第一个正常营业的店铺）
+     *
      * @return 店铺信息
      */
     @GetMapping("/my-store")
@@ -257,4 +272,4 @@ public class StoreController {
             throw new RuntimeException("无权操作此店铺");
         }
     }
-} 
+}

@@ -2,11 +2,11 @@ package example.shopping.controller;
 
 import example.shopping.dto.OrderDTO;
 import example.shopping.entity.Order;
-import example.shopping.entity.User;
 import example.shopping.entity.Store;
+import example.shopping.entity.User;
 import example.shopping.service.OrderService;
-import example.shopping.service.UserService;
 import example.shopping.service.StoreService;
+import example.shopping.service.UserService;
 import example.shopping.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,9 +16,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * 订单控制器
@@ -39,6 +39,7 @@ public class OrderController {
 
     /**
      * 创建订单
+     *
      * @param orderDTO 订单信息
      * @return 创建的订单
      */
@@ -51,6 +52,7 @@ public class OrderController {
 
     /**
      * 获取当前用户的订单列表
+     *
      * @return 订单列表
      */
     @GetMapping
@@ -61,7 +63,8 @@ public class OrderController {
 
     /**
      * 分页获取订单
-     * @param pageNum 页码
+     *
+     * @param pageNum  页码
      * @param pageSize 每页大小
      * @return 分页订单列表
      */
@@ -74,6 +77,7 @@ public class OrderController {
 
     /**
      * 获取订单详情
+     *
      * @param id 订单ID
      * @return 订单详情
      */
@@ -83,12 +87,12 @@ public class OrderController {
         if (order == null) {
             return Result.error("订单不存在");
         }
-        
+
         // 获取当前用户角色
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-                
+
         // 如果不是管理员，验证订单所属
         if (!isAdmin && !order.getUserId().equals(getCurrentUserId())) {
             return Result.error("无权查看此订单");
@@ -98,6 +102,7 @@ public class OrderController {
 
     /**
      * 按状态查询订单
+     *
      * @param status 订单状态
      * @return 订单列表
      */
@@ -107,7 +112,7 @@ public class OrderController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-                
+
         if (isAdmin) {
             // 管理员可以查看所有订单
             return Result.success(orderService.findByStatus(status));
@@ -120,6 +125,7 @@ public class OrderController {
 
     /**
      * 取消订单
+     *
      * @param id 订单ID
      * @return 取消结果
      */
@@ -132,6 +138,7 @@ public class OrderController {
 
     /**
      * 商家发货
+     *
      * @param id 订单ID
      * @return 发货结果
      */
@@ -144,6 +151,7 @@ public class OrderController {
 
     /**
      * 确认收货
+     *
      * @param id 订单ID
      * @return 确认结果
      */
@@ -156,6 +164,7 @@ public class OrderController {
 
     /**
      * 获取订单状态统计
+     *
      * @return 状态统计
      */
     @GetMapping("/count")
@@ -166,6 +175,7 @@ public class OrderController {
 
     /**
      * 获取店铺订单列表
+     *
      * @param storeId 店铺ID
      * @return 订单列表
      */
@@ -176,12 +186,12 @@ public class OrderController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        
+
         User user = userService.findByUsername(username);
         if (user == null) {
             return Result.error("用户不存在");
         }
-        
+
         // 验证店铺所有权
         Store store = storeService.findById(storeId);
         if (store == null) {
@@ -190,12 +200,13 @@ public class OrderController {
         if (!store.getUserId().equals(user.getId())) {
             return Result.error("无权查看此店铺的订单");
         }
-        
+
         return Result.success(orderService.findByStoreId(storeId));
     }
 
     /**
      * 获取店铺订单统计信息
+     *
      * @param storeId 店铺ID
      * @return 订单统计信息
      */
@@ -206,12 +217,12 @@ public class OrderController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        
+
         User user = userService.findByUsername(username);
         if (user == null) {
             return Result.error("用户不存在");
         }
-        
+
         // 验证店铺所有权
         Store store = storeService.findById(storeId);
         if (store == null) {
@@ -220,10 +231,10 @@ public class OrderController {
         if (!store.getUserId().equals(user.getId())) {
             return Result.error("无权查看此店铺的订单统计");
         }
-        
+
         // 获取店铺订单列表
         List<Order> orders = orderService.findByStoreId(storeId);
-        
+
         // 统计各状态订单数量
         Map<String, Object> stats = new HashMap<>();
         stats.put("total", orders.size());
@@ -236,23 +247,24 @@ public class OrderController {
         stats.put("refunded", orders.stream().filter(o -> o.getStatus() == 5).count());
         // 添加退款申请中的订单统计
         stats.put("refundPending", orders.stream().filter(o -> o.getStatus() == 6).count());
-        
+
         return Result.success(stats);
     }
 
     /**
      * 获取当前登录用户ID
+     *
      * @return 用户ID
      */
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        
+
         User user = userService.findByUsername(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
         return user.getId();
     }
-} 
+}

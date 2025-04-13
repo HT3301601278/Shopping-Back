@@ -23,6 +23,7 @@ public class ProductController {
 
     /**
      * 获取所有商品
+     *
      * @return 商品列表
      */
     @GetMapping
@@ -32,7 +33,8 @@ public class ProductController {
 
     /**
      * 分页获取商品
-     * @param pageNum 页码
+     *
+     * @param pageNum  页码
      * @param pageSize 每页大小
      * @return 包含分页信息的商品列表
      */
@@ -45,6 +47,7 @@ public class ProductController {
 
     /**
      * 根据ID获取商品
+     *
      * @param id 商品ID
      * @return 商品信息
      */
@@ -55,6 +58,7 @@ public class ProductController {
 
     /**
      * 根据店铺ID获取商品
+     *
      * @param storeId 店铺ID
      * @return 商品列表
      */
@@ -65,6 +69,7 @@ public class ProductController {
 
     /**
      * 根据分类ID获取商品
+     *
      * @param categoryId 分类ID
      * @return 商品列表
      */
@@ -75,6 +80,7 @@ public class ProductController {
 
     /**
      * 搜索商品
+     *
      * @param keyword 关键字
      * @return 商品列表
      */
@@ -85,6 +91,7 @@ public class ProductController {
 
     /**
      * 获取热门商品
+     *
      * @param limit 数量限制
      * @return 热门商品列表
      */
@@ -96,6 +103,7 @@ public class ProductController {
 
     /**
      * 获取新品
+     *
      * @param limit 数量限制
      * @return 新品列表
      */
@@ -107,6 +115,7 @@ public class ProductController {
 
     /**
      * 添加商品
+     *
      * @param product 商品信息
      * @return 添加的商品
      */
@@ -118,7 +127,8 @@ public class ProductController {
 
     /**
      * 更新商品
-     * @param id 商品ID
+     *
+     * @param id      商品ID
      * @param product 商品信息
      * @return 更新后的商品
      */
@@ -131,6 +141,7 @@ public class ProductController {
 
     /**
      * 删除商品
+     *
      * @param id 商品ID
      * @return 是否删除成功
      */
@@ -139,4 +150,4 @@ public class ProductController {
     public Result<Boolean> deleteProduct(@PathVariable Long id) {
         return Result.success(productService.delete(id), "删除商品成功");
     }
-} 
+}

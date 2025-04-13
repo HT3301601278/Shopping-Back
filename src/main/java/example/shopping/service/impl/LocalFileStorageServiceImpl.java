@@ -35,21 +35,21 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
             // 获取文件名和扩展名
             String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
             String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            
+
             // 生成新的文件名
             String newFilename = UUID.randomUUID().toString() + extension;
-            
+
             // 创建目标目录
             Path targetDir = Paths.get(uploadDir, directory).toAbsolutePath().normalize();
             Files.createDirectories(targetDir);
-            
+
             // 保存文件
             Path targetPath = targetDir.resolve(newFilename);
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-            
+
             // 返回文件URL
             return getFileUrl(newFilename, directory);
-            
+
         } catch (IOException ex) {
             log.error("文件存储失败", ex);
             throw new BusinessException("文件存储失败：" + ex.getMessage());
@@ -78,4 +78,4 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
     public String getFileUrl(String filename, String directory) {
         return urlPrefix + "/" + directory + "/" + filename;
     }
-} 
+}

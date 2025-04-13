@@ -107,10 +107,10 @@ public class FileController {
             throw new IllegalArgumentException("文件为空");
         }
         if (!ALLOWED_IMAGE_TYPES.contains(file.getContentType())) {
-            throw new IllegalArgumentException("不支持的图片格式，仅支持：" + 
-                ALLOWED_IMAGE_TYPES.stream()
-                    .map(type -> type.substring(type.lastIndexOf("/") + 1))
-                    .collect(Collectors.joining(", ")));
+            throw new IllegalArgumentException("不支持的图片格式，仅支持：" +
+                    ALLOWED_IMAGE_TYPES.stream()
+                            .map(type -> type.substring(type.lastIndexOf("/") + 1))
+                            .collect(Collectors.joining(", ")));
         }
     }
 
@@ -122,10 +122,10 @@ public class FileController {
             throw new IllegalArgumentException("文件为空");
         }
         if (!ALLOWED_DOCUMENT_TYPES.contains(file.getContentType())) {
-            throw new IllegalArgumentException("不支持的文件格式，仅支持：" + 
-                ALLOWED_DOCUMENT_TYPES.stream()
-                    .map(type -> type.substring(type.lastIndexOf("/") + 1))
-                    .collect(Collectors.joining(", ")));
+            throw new IllegalArgumentException("不支持的文件格式，仅支持：" +
+                    ALLOWED_DOCUMENT_TYPES.stream()
+                            .map(type -> type.substring(type.lastIndexOf("/") + 1))
+                            .collect(Collectors.joining(", ")));
         }
     }
-} 
+}

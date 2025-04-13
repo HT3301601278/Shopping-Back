@@ -31,13 +31,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         announcement.setPublisherId(publisherId);
         announcement.setStatus(announcementDTO.getStatus());
         announcement.setReadUsers("[]"); // 初始化为空数组
-        
+
         Date now = new Date();
         announcement.setCreateTime(now);
         announcement.setUpdateTime(now);
-        
+
         announcementMapper.insert(announcement);
-        
+
         return announcement;
     }
 
@@ -48,14 +48,14 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         if (announcement == null) {
             throw new BusinessException("公告不存在");
         }
-        
+
         announcement.setTitle(announcementDTO.getTitle());
         announcement.setContent(announcementDTO.getContent());
         announcement.setStatus(announcementDTO.getStatus());
         announcement.setUpdateTime(new Date());
-        
+
         announcementMapper.update(announcement);
-        
+
         return announcement;
     }
 
@@ -81,7 +81,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         if (announcement == null) {
             throw new BusinessException("公告不存在");
         }
-        
+
         return announcementMapper.deleteById(id) > 0;
     }
 
@@ -92,11 +92,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         if (announcement == null) {
             throw new BusinessException("公告不存在");
         }
-        
+
         if (status != 0 && status != 1) {
             throw new BusinessException("状态值无效");
         }
-        
+
         return announcementMapper.updateStatus(id, status) > 0;
     }
 
@@ -107,21 +107,21 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         if (announcement == null) {
             throw new BusinessException("公告不存在");
         }
-        
+
         // 获取已读用户列表
         List<Long> readUserIds = JSON.parseArray(announcement.getReadUsers(), Long.class);
         if (readUserIds == null) {
             readUserIds = new ArrayList<>();
         }
-        
+
         // 检查用户是否已经标记为已读
         if (readUserIds.contains(userId)) {
             return true;
         }
-        
+
         // 添加用户ID到已读列表
         readUserIds.add(userId);
-        
+
         // 更新已读用户列表
         String readUsersJson = JSON.toJSONString(readUserIds);
         return announcementMapper.updateReadUsers(id, readUsersJson) > 0;
@@ -138,12 +138,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     public List<Map<String, Object>> getUserAnnouncements(Long userId, boolean isRead) {
         List<Announcement> announcements = findAllVisible();
-        
+
         // 根据已读状态过滤公告
         List<Announcement> filteredAnnouncements = announcements.stream()
                 .filter(a -> isRead == isRead(a, userId))
                 .collect(Collectors.toList());
-        
+
         // 转换为Map列表，添加额外信息
         return filteredAnnouncements.stream().map(a -> {
             Map<String, Object> map = new HashMap<>();
@@ -157,15 +157,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             return map;
         }).collect(Collectors.toList());
     }
-    
+
     /**
      * 检查用户是否已读公告
+     *
      * @param announcement 公告
-     * @param userId 用户ID
+     * @param userId       用户ID
      * @return 是否已读
      */
     private boolean isRead(Announcement announcement, Long userId) {
         List<Long> readUserIds = JSON.parseArray(announcement.getReadUsers(), Long.class);
         return readUserIds != null && readUserIds.contains(userId);
     }
-} 
+}

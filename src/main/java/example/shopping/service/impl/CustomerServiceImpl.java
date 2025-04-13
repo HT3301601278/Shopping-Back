@@ -26,13 +26,13 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
 
     @Autowired
     private CustomerServiceSessionMapper sessionMapper;
-    
+
     @Autowired
     private CustomerServiceMessageMapper messageMapper;
-    
+
     @Autowired
     private UserMapper userMapper;
-    
+
     @Autowired
     private StoreMapper storeMapper;
 
@@ -44,32 +44,32 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         if (user == null) {
             throw new BusinessException("用户不存在");
         }
-        
+
         // 检查店铺是否存在
         Store store = storeMapper.findById(sessionDTO.getStoreId());
         if (store == null) {
             throw new BusinessException("店铺不存在");
         }
-        
+
         // 检查是否已有进行中的会话
         CustomerServiceSession activeSession = sessionMapper.findActiveByUserIdAndStoreId(userId, sessionDTO.getStoreId());
         if (activeSession != null) {
             return activeSession;
         }
-        
+
         // 创建新会话
         CustomerServiceSession session = new CustomerServiceSession();
         session.setUserId(userId);
         session.setStoreId(sessionDTO.getStoreId());
         session.setStatus(0); // 0-进行中
-        
+
         Date now = new Date();
         session.setStartTime(now);
         session.setCreateTime(now);
         session.setUpdateTime(now);
-        
+
         sessionMapper.insert(session);
-        
+
         return session;
     }
 
@@ -80,11 +80,11 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         if (session == null) {
             throw new BusinessException("会话不存在");
         }
-        
+
         if (session.getStatus() == 1) {
             return true; // 已经是结束状态
         }
-        
+
         Date now = new Date();
         return sessionMapper.updateStatus(sessionId, 1, now) > 0; // 1-已结束
     }
@@ -96,17 +96,17 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         if (session == null) {
             throw new BusinessException("会话不存在");
         }
-        
+
         // 检查会话是否属于该用户
         if (!session.getUserId().equals(userId)) {
             throw new BusinessException("无权评价此会话");
         }
-        
+
         // 检查会话是否已结束
         if (session.getStatus() != 1) { // 1-已结束
             throw new BusinessException("只能评价已结束的会话");
         }
-        
+
         return sessionMapper.updateEvaluation(
                 evaluationDTO.getSessionId(),
                 evaluationDTO.getEvaluation(),
@@ -121,12 +121,12 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         if (session == null) {
             throw new BusinessException("会话不存在");
         }
-        
+
         // 检查会话是否进行中
         if (session.getStatus() != 0) { // 0-进行中
             throw new BusinessException("只能在进行中的会话中发送消息");
         }
-        
+
         // 检查发送权限
         if (fromType == 0) { // 用户发送
             if (!session.getUserId().equals(userId)) {
@@ -139,7 +139,7 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         } else {
             throw new BusinessException("发送方类型无效");
         }
-        
+
         // 创建消息
         CustomerServiceMessage message = new CustomerServiceMessage();
         message.setSessionId(messageDTO.getSessionId());
@@ -150,13 +150,13 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         message.setContentType(messageDTO.getContentType());
         message.setReadStatus(false); // 初始为未读
         message.setCreateTime(new Date());
-        
+
         messageMapper.insert(message);
-        
+
         // 更新会话的更新时间
         session.setUpdateTime(new Date());
         sessionMapper.update(session);
-        
+
         return message;
     }
 
@@ -167,7 +167,7 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         if (session == null) {
             throw new BusinessException("会话不存在");
         }
-        
+
         // 直接标记指定发送方类型的消息为已读
         return messageMapper.updateReadStatusBySessionIdAndFromType(sessionId, fromType, true) > 0;
     }
@@ -178,7 +178,7 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         if (session == null) {
             throw new BusinessException("会话不存在");
         }
-        
+
         return messageMapper.findBySessionId(sessionId);
     }
 
@@ -216,14 +216,14 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
     public Double calculateAverageEvaluation(Long storeId) {
         return sessionMapper.calculateAverageEvaluation(storeId);
     }
-    
+
     @Override
     public List<Map<String, Object>> getServiceRatingStats() {
         List<Map<String, Object>> stats = new ArrayList<>();
-        
+
         // 获取所有店铺
         List<Store> stores = storeMapper.findAll();
-        
+
         for (Store store : stores) {
             Map<String, Object> stat = new HashMap<>();
             stat.put("storeId", store.getId());
@@ -233,10 +233,10 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
             stat.put("responseTime", getAverageResponseTime(store.getId()));
             stats.add(stat);
         }
-        
+
         return stats;
     }
-    
+
     @Override
     @Transactional
     public boolean handleComplaint(Long sessionId, CustomerServiceDTO.ComplaintDTO complaintDTO) {
@@ -244,12 +244,12 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         if (session == null) {
             throw new BusinessException("会话不存在");
         }
-        
+
         // 检查投诉状态
         if (session.getComplaintStatus() != 0) {
             throw new BusinessException("该投诉已处理");
         }
-        
+
         // 更新投诉状态
         return sessionMapper.updateComplaintStatus(
                 sessionId,
@@ -259,53 +259,54 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
                 complaintDTO.getPenaltyContent()
         ) > 0;
     }
-    
+
     @Override
     public int getSessionCount(Long storeId) {
         return sessionMapper.countByStoreId(storeId);
     }
-    
+
     @Override
     public double getAverageResponseTime(Long storeId) {
         Double avgTime = messageMapper.calculateAverageResponseTime(storeId);
         return avgTime != null ? avgTime : 0.0;
     }
-    
+
     @Override
     public List<Map<String, Object>> getComplaints() {
         List<CustomerServiceSession> complainedSessions = sessionMapper.findComplainedSessions();
         List<Map<String, Object>> result = new ArrayList<>();
-        
+
         for (CustomerServiceSession session : complainedSessions) {
             Map<String, Object> complaint = new HashMap<>();
             complaint.put("sessionId", session.getId());
             complaint.put("userId", session.getUserId());
             complaint.put("storeId", session.getStoreId());
-            
+
             // 获取店铺信息
             Store store = storeMapper.findById(session.getStoreId());
             if (store != null) {
                 complaint.put("storeName", store.getName());
             }
-            
+
             // 获取用户评价备注作为投诉内容
             complaint.put("complaintContent", session.getRemark());
             complaint.put("status", session.getComplaintStatus());
             complaint.put("createTime", session.getCreateTime());
-            
+
             result.add(complaint);
         }
-        
+
         return result;
     }
-    
+
     @Override
     public CustomerServiceSession findById(Long sessionId) {
         return sessionMapper.findById(sessionId);
     }
-    
+
     /**
      * 转换会话对象为Map
+     *
      * @param session 会话对象
      * @return Map
      */
@@ -313,17 +314,17 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
         Map<String, Object> map = new HashMap<>();
         map.put("id", session.getId());
         map.put("storeId", session.getStoreId());
-        
+
         // 获取店铺名称
         Store store = storeMapper.findById(session.getStoreId());
         map.put("storeName", store != null ? store.getName() : null);
-        
+
         map.put("userId", session.getUserId());
-        
+
         // 获取用户名
         User user = userMapper.findById(session.getUserId());
         map.put("username", user != null ? user.getUsername() : null);
-        
+
         // 获取最后一条消息
         List<CustomerServiceMessage> messages = messageMapper.findBySessionId(session.getId());
         if (messages != null && !messages.isEmpty()) {
@@ -334,13 +335,13 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
             lastMessageMap.put("createTime", lastMessage.getCreateTime());
             map.put("lastMessage", lastMessageMap);
         }
-        
+
         // 获取店铺未读消息数
         map.put("unreadCount", messageMapper.countUnreadBySessionIdAndFromType(session.getId(), 0));  // 用户发送的未读消息
-        
+
         map.put("status", session.getStatus());
         map.put("updateTime", session.getUpdateTime());
-        
+
         return map;
     }
-} 
+}

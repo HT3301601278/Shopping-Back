@@ -61,6 +61,7 @@ public class Address {
 
     /**
      * 统一API响应结果封装
+     *
      * @param <T> 数据类型
      */
     @Data
@@ -77,6 +78,7 @@ public class Address {
 
         /**
          * 成功返回结果
+         *
          * @param data 获取的数据
          */
         public static <T> Result<T> success(T data) {
@@ -85,8 +87,9 @@ public class Address {
 
         /**
          * 成功返回结果
+         *
          * @param data 获取的数据
-         * @param msg 提示信息
+         * @param msg  提示信息
          */
         public static <T> Result<T> success(T data, String msg) {
             return new Result<>(200, msg, data);
@@ -94,6 +97,7 @@ public class Address {
 
         /**
          * 失败返回结果
+         *
          * @param msg 提示信息
          */
         public static <T> Result<T> error(String msg) {
@@ -102,8 +106,9 @@ public class Address {
 
         /**
          * 失败返回结果
+         *
          * @param code 错误码
-         * @param msg 提示信息
+         * @param msg  提示信息
          */
         public static <T> Result<T> error(Integer code, String msg) {
             return new Result<>(code, msg, null);

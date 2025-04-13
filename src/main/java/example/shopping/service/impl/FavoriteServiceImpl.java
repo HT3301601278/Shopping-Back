@@ -102,6 +102,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     /**
      * 转换收藏对象为Map
+     *
      * @param favorite 收藏对象
      * @return Map
      */

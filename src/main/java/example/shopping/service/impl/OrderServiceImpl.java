@@ -350,8 +350,8 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 检查订单状态是否为待发货或待收货
-        if (order.getStatus() != OrderStatus.PAID.getValue() && 
-            order.getStatus() != OrderStatus.SHIPPED.getValue()) {
+        if (order.getStatus() != OrderStatus.PAID.getValue() &&
+                order.getStatus() != OrderStatus.SHIPPED.getValue()) {
             throw new BusinessException("当前订单状态不支持申请退款");
         }
 
@@ -455,6 +455,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 生成订单编号
+     *
      * @return 订单编号
      */
     private String generateOrderNo() {
@@ -468,7 +469,8 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 获取收货地址信息
-     * @param user 用户
+     *
+     * @param user      用户
      * @param addressId 地址ID
      * @return 地址信息JSON字符串
      */

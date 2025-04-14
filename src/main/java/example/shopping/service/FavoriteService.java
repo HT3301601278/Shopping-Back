@@ -62,4 +62,12 @@ public interface FavoriteService {
      * @return 收藏次数
      */
     int countByProductId(Long productId);
+
+    /**
+     * 统计用户的收藏总数
+     *
+     * @param userId 用户ID
+     * @return 收藏总数
+     */
+    int countByUserId(Long userId);
 }

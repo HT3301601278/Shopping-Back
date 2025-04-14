@@ -100,6 +100,11 @@ public class FavoriteServiceImpl implements FavoriteService {
         return favoriteMapper.countByProductId(productId);
     }
 
+    @Override
+    public int countByUserId(Long userId) {
+        return favoriteMapper.countByUserId(userId);
+    }
+
     /**
      * 转换收藏对象为Map
      *

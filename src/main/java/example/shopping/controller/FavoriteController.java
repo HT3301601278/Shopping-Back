@@ -104,6 +104,17 @@ public class FavoriteController {
     }
 
     /**
+     * 获取当前用户的收藏总数
+     *
+     * @return 收藏总数
+     */
+    @GetMapping("/count/user")
+    public Address.Result<Integer> getUserFavoriteCount() {
+        Long userId = getCurrentUserId();
+        return Address.Result.success(favoriteService.countByUserId(userId));
+    }
+
+    /**
      * 获取当前登录用户ID
      *
      * @return 用户ID

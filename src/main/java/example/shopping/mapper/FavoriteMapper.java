@@ -87,4 +87,13 @@ public interface FavoriteMapper {
      */
     @Select("SELECT * FROM favorites WHERE user_id = #{userId} ORDER BY create_time DESC LIMIT #{offset}, #{limit}")
     List<Favorite> findByUserIdWithPage(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+
+    /**
+     * 统计用户的收藏总数
+     *
+     * @param userId 用户ID
+     * @return 收藏总数
+     */
+    @Select("SELECT COUNT(*) FROM favorites WHERE user_id = #{userId}")
+    int countByUserId(Long userId);
 }

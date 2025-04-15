@@ -53,13 +53,28 @@ public class CustomerServiceController {
     /**
      * 获取用户的会话列表
      *
+     * @param page 页码（从1开始）
+     * @param size 每页大小
      * @return 用户的会话列表
      */
     @GetMapping("/sessions/user")
     @PreAuthorize("hasRole('USER')")
-    public Result<List<Map<String, Object>>> getUserSessions() {
+    public Result<Map<String, Object>> getUserSessions(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Long userId = getCurrentUserId();
-        return Result.success(customerService.findSessionsByUserId(userId));
+        
+        // 计算总数
+        int total = customerService.getSessionCount(userId);
+
+        // 获取分页数据
+        List<Map<String, Object>> sessions = customerService.findSessionsByUserId(userId, page, size);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", total);
+        result.put("sessions", sessions);
+
+        return Result.success(result);
     }
 
     /**

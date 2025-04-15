@@ -12,6 +12,8 @@ import example.shopping.mapper.StoreMapper;
 import example.shopping.mapper.UserMapper;
 import example.shopping.service.CustomerServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -184,6 +186,16 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
 
     @Override
     public List<Map<String, Object>> findSessionsByUserId(Long userId) {
+        // 获取当前用户ID
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User currentUser = userMapper.findByUsername(username);
+        
+        // 验证权限
+        if (!currentUser.getId().equals(userId)) {
+            throw new BusinessException("您无权查看其他用户的会话");
+        }
+        
         List<CustomerServiceSession> sessions = sessionMapper.findByUserId(userId);
         return sessions.stream().map(this::convertSessionToMap).collect(Collectors.toList());
     }
@@ -261,11 +273,6 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
     }
 
     @Override
-    public int getSessionCount(Long storeId) {
-        return sessionMapper.countByStoreId(storeId);
-    }
-
-    @Override
     public double getAverageResponseTime(Long storeId) {
         Double avgTime = messageMapper.calculateAverageResponseTime(storeId);
         return avgTime != null ? avgTime : 0.0;
@@ -302,6 +309,64 @@ public class CustomerServiceImpl implements CustomerServiceInterface {
     @Override
     public CustomerServiceSession findById(Long sessionId) {
         return sessionMapper.findById(sessionId);
+    }
+
+    @Override
+    public List<Map<String, Object>> findSessionsByUserId(Long userId, int page, int size) {
+        // 获取当前用户ID
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User currentUser = userMapper.findByUsername(username);
+        
+        // 验证权限
+        if (!currentUser.getId().equals(userId)) {
+            throw new BusinessException("您无权查看其他用户的会话");
+        }
+        
+        // 计算偏移量
+        int offset = (page - 1) * size;
+        List<CustomerServiceSession> sessions = sessionMapper.findByUserIdWithPage(userId, offset, size);
+        return sessions.stream().map(session -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", session.getId());
+            map.put("storeId", session.getStoreId());
+
+            // 获取店铺名称
+            Store store = storeMapper.findById(session.getStoreId());
+            map.put("storeName", store != null ? store.getName() : null);
+
+            map.put("status", session.getStatus());
+            map.put("startTime", session.getStartTime());
+            map.put("endTime", session.getEndTime());
+
+            // 获取最后一条消息
+            CustomerServiceMessage lastMessage = messageMapper.findLastMessageBySessionId(session.getId());
+            if (lastMessage != null) {
+                map.put("lastMessage", lastMessage.getContent());
+            }
+
+            // 获取未读消息数
+            map.put("unreadCount", messageMapper.countUnreadBySessionIdAndFromType(session.getId(), 1));  // 商家发送的未读消息
+
+            return map;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public int getSessionCount(Long id) {
+        if (id == null) {
+            return 0;
+        }
+        // 根据当前用户角色判断是查询用户的会话数还是店铺的会话数
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isMerchant = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MERCHANT"));
+        
+        if (isMerchant) {
+            return sessionMapper.countByStoreId(id);
+        } else {
+            return sessionMapper.countByUserId(id);
+        }
     }
 
     /**

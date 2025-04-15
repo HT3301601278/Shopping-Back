@@ -109,4 +109,13 @@ public interface CustomerServiceMessageMapper {
             "FROM user_messages " +
             "WHERE store_response_time IS NOT NULL")
     Double calculateAverageResponseTime(Long storeId);
+
+    /**
+     * 查询会话的最后一条消息
+     *
+     * @param sessionId 会话ID
+     * @return 最后一条消息
+     */
+    @Select("SELECT * FROM customer_service_messages WHERE session_id = #{sessionId} ORDER BY create_time DESC LIMIT 1")
+    CustomerServiceMessage findLastMessageBySessionId(@Param("sessionId") Long sessionId);
 }

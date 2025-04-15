@@ -211,4 +211,24 @@ public interface CustomerServiceSessionMapper {
      */
     @Select("SELECT * FROM customer_service_sessions WHERE store_id = #{storeId} ORDER BY update_time DESC LIMIT #{offset}, #{limit}")
     List<CustomerServiceSession> findByStoreIdWithPage(@Param("storeId") Long storeId, @Param("offset") int offset, @Param("limit") int limit);
+
+    /**
+     * 分页查询用户的会话列表
+     *
+     * @param userId 用户ID
+     * @param offset 偏移量
+     * @param limit  数量限制
+     * @return 会话列表
+     */
+    @Select("SELECT * FROM customer_service_sessions WHERE user_id = #{userId} ORDER BY start_time DESC LIMIT #{offset}, #{limit}")
+    List<CustomerServiceSession> findByUserIdWithPage(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+
+    /**
+     * 统计用户的会话数量
+     *
+     * @param userId 用户ID
+     * @return 会话数量
+     */
+    @Select("SELECT COUNT(*) FROM customer_service_sessions WHERE user_id = #{userId}")
+    int countByUserId(@Param("userId") Long userId);
 }

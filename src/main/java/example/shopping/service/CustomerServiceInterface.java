@@ -135,12 +135,15 @@ public interface CustomerServiceInterface {
     boolean handleComplaint(Long sessionId, CustomerServiceDTO.ComplaintDTO complaintDTO);
 
     /**
-     * 获取店铺的会话数量
+     * 获取会话数量
+     * 根据当前用户角色判断：
+     * - 如果是商家用户，则获取店铺的会话数量
+     * - 如果是普通用户，则获取用户的会话数量
      *
-     * @param storeId 店铺ID
+     * @param id 用户ID或店铺ID
      * @return 会话数量
      */
-    int getSessionCount(Long storeId);
+    int getSessionCount(Long id);
 
     /**
      * 获取店铺的平均响应时间（分钟）
@@ -164,4 +167,14 @@ public interface CustomerServiceInterface {
      * @return 会话信息
      */
     CustomerServiceSession findById(Long sessionId);
+
+    /**
+     * 查询用户的会话列表（分页）
+     *
+     * @param userId 用户ID
+     * @param page   页码（从1开始）
+     * @param size   每页大小
+     * @return 会话列表
+     */
+    List<Map<String, Object>> findSessionsByUserId(Long userId, int page, int size);
 }

@@ -14,9 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * 评论控制器
@@ -33,6 +33,7 @@ public class ReviewController {
 
     /**
      * 添加评论
+     *
      * @param reviewDTO 评论信息
      * @return 添加的评论
      */
@@ -45,6 +46,7 @@ public class ReviewController {
 
     /**
      * 获取商品评论列表
+     *
      * @param productId 商品ID
      * @return 评论列表
      */
@@ -55,7 +57,7 @@ public class ReviewController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         boolean isMerchant = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_MERCHANT"));
-                
+
         if (isAdmin) {
             // 管理员可以看到所有评论
             return Result.success(reviewService.findByProductId(productId));
@@ -70,6 +72,7 @@ public class ReviewController {
 
     /**
      * 获取用户评论列表
+     *
      * @param userId 用户ID
      * @return 评论列表
      */
@@ -80,6 +83,7 @@ public class ReviewController {
 
     /**
      * 获取订单评论
+     *
      * @param orderId 订单ID
      * @return 评论列表
      */
@@ -91,7 +95,8 @@ public class ReviewController {
 
     /**
      * 分页查询评论
-     * @param pageNum 页码
+     *
+     * @param pageNum  页码
      * @param pageSize 每页大小
      * @return 分页评论列表
      */
@@ -104,6 +109,7 @@ public class ReviewController {
 
     /**
      * 回复评论
+     *
      * @param reviewDTO 评论信息
      * @return 回复的评论
      */
@@ -116,7 +122,8 @@ public class ReviewController {
 
     /**
      * 商家提交评论审核
-     * @param id 评论ID
+     *
+     * @param id     评论ID
      * @param reason 申请审核的理由
      * @return 更新后的评论对象
      */
@@ -130,6 +137,7 @@ public class ReviewController {
 
     /**
      * 获取评论的所有回复
+     *
      * @param parentId 父评论ID
      * @return 回复列表
      */
@@ -140,7 +148,8 @@ public class ReviewController {
 
     /**
      * 管理员审核评论
-     * @param id 评论ID
+     *
+     * @param id     评论ID
      * @param status 状态(1-显示, 2-隐藏)
      * @return 是否审核成功
      */
@@ -154,7 +163,8 @@ public class ReviewController {
 
     /**
      * 商家设置评论置顶
-     * @param id 评论ID
+     *
+     * @param id    评论ID
      * @param isTop 是否置顶
      * @return 是否设置成功
      */
@@ -164,12 +174,13 @@ public class ReviewController {
             @PathVariable Long id,
             @RequestParam Boolean isTop) {
         Long merchantId = getCurrentUserId();
-        return Result.success(reviewService.setTop(id, isTop, merchantId), 
-            isTop ? "评论已置顶" : "评论已取消置顶");
+        return Result.success(reviewService.setTop(id, isTop, merchantId),
+                isTop ? "评论已置顶" : "评论已取消置顶");
     }
 
     /**
      * 删除评论
+     *
      * @param id 评论ID
      * @return 是否删除成功
      */
@@ -181,6 +192,7 @@ public class ReviewController {
 
     /**
      * 获取待审核评论列表（管理员功能）
+     *
      * @return 待审核评论列表
      */
     @GetMapping("/pending")
@@ -191,6 +203,7 @@ public class ReviewController {
 
     /**
      * 获取评论及其所有相关回复（管理员功能）
+     *
      * @param reviewId 评论ID
      * @return 评论及其所有相关回复列表
      */
@@ -202,6 +215,7 @@ public class ReviewController {
 
     /**
      * 获取商品评论统计
+     *
      * @param productId 商品ID
      * @return 评论统计信息
      */
@@ -215,6 +229,7 @@ public class ReviewController {
 
     /**
      * 获取商家的用户评论列表（仅type=0的评论）
+     *
      * @param productId 商品ID
      * @return 评论列表
      */
@@ -229,22 +244,38 @@ public class ReviewController {
     }
 
     /**
-     * 获取评论的完整上下文（包括原始评论和所有相关回复）
+     * 获取评论的完整上下文（包括原始评论和所有相关回复，不包括隐藏的评论）
+     *
      * @param reviewId 评论ID
      * @return 评论及其上下文
      */
     @GetMapping("/{reviewId}/full-context")
-    @PreAuthorize("hasRole('MERCHANT')")
     public Result<List<Review>> getReviewFullContext(@PathVariable Long reviewId) {
-        // 验证当前商家是否有权限查看该评论
-        Review review = reviewService.findById(reviewId);
-        if (review == null) {
-            return Result.error("评论不存在");
-        }
+        List<Review> allReplies = reviewService.findReviewAndAllReplies(reviewId);
+        // 过滤掉隐藏状态(status=2)的评论
+        List<Review> visibleReplies = allReplies.stream()
+                .filter(review -> review.getStatus() != 2)
+                .collect(java.util.stream.Collectors.toList());
+        return Result.success(visibleReplies);
+    }
+
+    /**
+     * 获取商品的所有用户评论（只返回type=0的用户评论）
+     *
+     * @param productId 商品ID
+     * @return 评论列表
+     */
+    @GetMapping("/product/{productId}/all-reviews")
+    public Result<List<Review>> getAllProductReviews(@PathVariable Long productId) {
+        // 获取评论列表（已审核通过的评论）
+        List<Review> reviews = reviewService.findByProductIdAndStatus(productId, 0);
         
-        // 获取评论的完整上下文
-        List<Review> context = reviewService.findReviewAndAllReplies(reviewId);
-        return Result.success(context);
+        // 只返回type=0的用户评论
+        List<Review> userReviews = reviews.stream()
+                .filter(review -> review.getType() == 0)
+                .collect(java.util.stream.Collectors.toList());
+
+        return Result.success(userReviews);
     }
 
     // 工具方法：获取当前登录用户ID
@@ -252,11 +283,11 @@ public class ReviewController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        
+
         User user = userService.findByUsername(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
         return user.getId();
     }
-} 
+}

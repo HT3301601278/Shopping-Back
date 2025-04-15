@@ -33,6 +33,7 @@ public class AdminController {
 
     /**
      * 获取所有用户列表
+     *
      * @return 用户列表
      */
     @GetMapping("/users")
@@ -42,6 +43,7 @@ public class AdminController {
 
     /**
      * 按角色获取用户列表
+     *
      * @param role 角色
      * @return 用户列表
      */
@@ -52,6 +54,7 @@ public class AdminController {
 
     /**
      * 获取所有店铺列表
+     *
      * @return 店铺列表
      */
     @GetMapping("/stores")
@@ -61,6 +64,7 @@ public class AdminController {
 
     /**
      * 获取待审核店铺列表
+     *
      * @return 待审核店铺列表
      */
     @GetMapping("/stores/pending")
@@ -70,7 +74,8 @@ public class AdminController {
 
     /**
      * 审核店铺
-     * @param id 店铺ID
+     *
+     * @param id     店铺ID
      * @param status 状态(0-审核中, 1-正常, 2-关闭)
      * @return 是否审核成功
      */
@@ -92,6 +97,7 @@ public class AdminController {
 
     /**
      * 获取所有店铺的客服满意度统计
+     *
      * @return 店铺客服满意度统计
      */
     @GetMapping("/customer-service/stats")
@@ -101,6 +107,7 @@ public class AdminController {
 
     /**
      * 获取客服满意度低于指定值的店铺
+     *
      * @param threshold 满意度阈值
      * @return 满意度较低的店铺列表
      */
@@ -114,6 +121,7 @@ public class AdminController {
 
     /**
      * 获取指定店铺的客服满意度详情
+     *
      * @param storeId 店铺ID
      * @return 客服满意度详情
      */
@@ -136,6 +144,7 @@ public class AdminController {
 
     /**
      * 获取客服会话投诉列表
+     *
      * @return 投诉列表
      */
     @GetMapping("/customer-service/complaints")

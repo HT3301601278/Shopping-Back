@@ -28,6 +28,7 @@ public class UserController {
 
     /**
      * 获取当前登录用户信息
+     *
      * @return 用户信息
      */
     @GetMapping("/profile")
@@ -40,6 +41,7 @@ public class UserController {
 
     /**
      * 更新用户个人信息
+     *
      * @param userProfileDTO 用户个人信息
      * @return 更新后的用户信息
      */
@@ -53,6 +55,7 @@ public class UserController {
 
     /**
      * 修改用户密码
+     *
      * @param passwordDTO 密码信息
      * @return 是否修改成功
      */
@@ -65,13 +68,14 @@ public class UserController {
 
     /**
      * 获取当前登录用户ID
+     *
      * @return 用户ID
      */
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        
+
         User user = userService.findByUsername(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
@@ -100,4 +104,4 @@ public class UserController {
         user.setPassword(null); // 不返回密码
         return Result.success(user);
     }
-} 
+}

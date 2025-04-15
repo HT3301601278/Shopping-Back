@@ -26,6 +26,7 @@ public class AuthController {
 
     /**
      * 用户登录
+     *
      * @param loginDTO 登录信息
      * @return 包含用户信息和token的结果
      */
@@ -37,6 +38,7 @@ public class AuthController {
 
     /**
      * 用户注册
+     *
      * @param registerDTO 注册信息
      * @return 注册成功的用户信息
      */
@@ -45,4 +47,4 @@ public class AuthController {
         User user = userService.register(registerDTO);
         return Result.success(user, "注册成功");
     }
-} 
+}

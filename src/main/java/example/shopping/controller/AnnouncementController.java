@@ -32,6 +32,7 @@ public class AnnouncementController {
 
     /**
      * 获取所有公告（管理员）
+     *
      * @return 公告列表
      */
     @GetMapping("/admin")
@@ -42,6 +43,7 @@ public class AnnouncementController {
 
     /**
      * 获取显示中的公告（全部用户）
+     *
      * @return 公告列表
      */
     @GetMapping
@@ -51,6 +53,7 @@ public class AnnouncementController {
 
     /**
      * 根据ID获取公告详情
+     *
      * @param id 公告ID
      * @return 公告信息
      */
@@ -61,6 +64,7 @@ public class AnnouncementController {
 
     /**
      * 添加公告（管理员）
+     *
      * @param announcementDTO 公告信息
      * @return 添加的公告
      */
@@ -73,7 +77,8 @@ public class AnnouncementController {
 
     /**
      * 更新公告（管理员）
-     * @param id 公告ID
+     *
+     * @param id              公告ID
      * @param announcementDTO 公告信息
      * @return 更新后的公告
      */
@@ -87,6 +92,7 @@ public class AnnouncementController {
 
     /**
      * 删除公告（管理员）
+     *
      * @param id 公告ID
      * @return 是否删除成功
      */
@@ -98,7 +104,8 @@ public class AnnouncementController {
 
     /**
      * 更新公告状态（管理员）
-     * @param id 公告ID
+     *
+     * @param id     公告ID
      * @param status 状态(0-隐藏, 1-显示)
      * @return 是否更新成功
      */
@@ -112,6 +119,7 @@ public class AnnouncementController {
 
     /**
      * 标记公告为已读（登录用户）
+     *
      * @param id 公告ID
      * @return 是否标记成功
      */
@@ -124,6 +132,7 @@ public class AnnouncementController {
 
     /**
      * 获取当前用户未读公告数量（登录用户）
+     *
      * @return 未读公告数量
      */
     @GetMapping("/unread/count")
@@ -135,6 +144,7 @@ public class AnnouncementController {
 
     /**
      * 获取当前用户未读公告列表（登录用户）
+     *
      * @return 未读公告列表
      */
     @GetMapping("/unread")
@@ -146,6 +156,7 @@ public class AnnouncementController {
 
     /**
      * 获取当前用户已读公告列表（登录用户）
+     *
      * @return 已读公告列表
      */
     @GetMapping("/read")
@@ -157,17 +168,18 @@ public class AnnouncementController {
 
     /**
      * 获取当前登录用户ID
+     *
      * @return 用户ID
      */
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        
+
         User user = userService.findByUsername(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
         return user.getId();
     }
-} 
+}

@@ -28,10 +28,10 @@ public class StoreServiceImpl implements StoreService {
 
     @Autowired
     private StoreMapper storeMapper;
-    
+
     @Autowired
     private UserMapper userMapper;
-    
+
     @Autowired
     private CustomerServiceSessionMapper sessionMapper;
 
@@ -43,19 +43,19 @@ public class StoreServiceImpl implements StoreService {
         if (user == null) {
             throw new BusinessException("用户不存在");
         }
-        
+
         // 补充店铺信息
         store.setUserId(userId);
         if (store.getStatus() == null) {
             store.setStatus(0); // 0-审核中
         }
-        
+
         Date now = new Date();
         store.setCreateTime(now);
         store.setUpdateTime(now);
-        
+
         storeMapper.insert(store);
-        
+
         return store;
     }
 
@@ -66,15 +66,15 @@ public class StoreServiceImpl implements StoreService {
         if (existingStore == null) {
             throw new BusinessException("店铺不存在");
         }
-        
+
         // 保留不可修改的字段
         store.setId(id);
         store.setUserId(existingStore.getUserId());
         store.setCreateTime(existingStore.getCreateTime());
         store.setUpdateTime(new Date());
-        
+
         storeMapper.update(store);
-        
+
         return storeMapper.findById(id);
     }
 
@@ -97,13 +97,13 @@ public class StoreServiceImpl implements StoreService {
     public Map<String, Object> findByPage(int pageNum, int pageSize) {
         int offset = (pageNum - 1) * pageSize;
         List<Store> stores = storeMapper.findByPage(offset, pageSize);
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("list", stores);
         result.put("pageNum", pageNum);
         result.put("pageSize", pageSize);
         // TODO: 添加总数统计
-        
+
         return result;
     }
 
@@ -112,7 +112,7 @@ public class StoreServiceImpl implements StoreService {
         if (keyword == null || keyword.trim().isEmpty()) {
             throw new BusinessException("搜索关键字不能为空");
         }
-        
+
         return storeMapper.search(keyword.trim());
     }
 
@@ -123,20 +123,20 @@ public class StoreServiceImpl implements StoreService {
         if (store == null) {
             throw new BusinessException("店铺不存在");
         }
-        
+
         if (status < 0 || status > 2) {
             throw new BusinessException("状态值无效");
         }
-        
+
         // 当店铺审核通过时，将用户角色更新为商家
         if (status == 1 && store.getStatus() != 1) {
             // 获取店铺所有者
             User storeOwner = userMapper.findById(store.getUserId());
             log.info("店铺所有者信息: {}", storeOwner);
-            
+
             if (storeOwner != null && "ROLE_USER".equals(storeOwner.getRole())) {
                 log.info("开始更新用户角色为商家，用户ID: {}", storeOwner.getId());
-                
+
                 // 保留原有用户信息，仅更新角色和更新时间
                 User updateUser = new User();
                 updateUser.setId(storeOwner.getId());
@@ -149,10 +149,10 @@ public class StoreServiceImpl implements StoreService {
                 updateUser.setStatus(storeOwner.getStatus());
                 updateUser.setAddresses(storeOwner.getAddresses());
                 updateUser.setUpdateTime(new Date());
-                
+
                 int result = userMapper.update(updateUser);
                 log.info("用户角色更新结果: {}", result);
-                
+
                 // 再次查询确认更新结果
                 User updatedUser = userMapper.findById(storeOwner.getId());
                 log.info("更新后的用户信息: {}", updatedUser);
@@ -160,7 +160,7 @@ public class StoreServiceImpl implements StoreService {
                 log.info("用户不满足更新条件，当前角色: {}", storeOwner != null ? storeOwner.getRole() : "null");
             }
         }
-        
+
         boolean updateResult = storeMapper.updateStatus(id, status) > 0;
         log.info("店铺状态更新结果: {}", updateResult);
         return updateResult;
@@ -173,7 +173,7 @@ public class StoreServiceImpl implements StoreService {
         if (store == null) {
             throw new BusinessException("店铺不存在");
         }
-        
+
         return storeMapper.deleteById(id) > 0;
     }
 
@@ -183,7 +183,7 @@ public class StoreServiceImpl implements StoreService {
         if (store == null) {
             throw new BusinessException("店铺不存在");
         }
-        
+
         // 获取客服会话评价的平均分
         Double avgRating = sessionMapper.calculateAverageEvaluation(id);
         return avgRating != null ? avgRating : 5.0; // 默认5分
@@ -194,7 +194,7 @@ public class StoreServiceImpl implements StoreService {
         if (status < 0 || status > 2) {
             throw new BusinessException("状态值无效");
         }
-        
+
         return storeMapper.findByStatus(status);
     }
 
@@ -223,4 +223,4 @@ public class StoreServiceImpl implements StoreService {
         }
         return storeMapper.countStoresByUserIdAndStatus(userId, status);
     }
-} 
+}

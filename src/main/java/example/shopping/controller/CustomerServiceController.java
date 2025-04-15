@@ -3,11 +3,11 @@ package example.shopping.controller;
 import example.shopping.dto.CustomerServiceDTO;
 import example.shopping.entity.CustomerServiceMessage;
 import example.shopping.entity.CustomerServiceSession;
-import example.shopping.entity.User;
 import example.shopping.entity.Store;
+import example.shopping.entity.User;
 import example.shopping.exception.BusinessException;
-import example.shopping.mapper.UserMapper;
 import example.shopping.mapper.StoreMapper;
+import example.shopping.mapper.UserMapper;
 import example.shopping.service.CustomerServiceInterface;
 import example.shopping.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +17,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * 客服控制器
@@ -39,6 +39,7 @@ public class CustomerServiceController {
 
     /**
      * 创建客服会话
+     *
      * @param sessionDTO 会话信息
      * @return 创建的会话
      */
@@ -51,20 +52,37 @@ public class CustomerServiceController {
 
     /**
      * 获取用户的会话列表
+     *
+     * @param page 页码（从1开始）
+     * @param size 每页大小
      * @return 用户的会话列表
      */
     @GetMapping("/sessions/user")
     @PreAuthorize("hasRole('USER')")
-    public Result<List<Map<String, Object>>> getUserSessions() {
+    public Result<Map<String, Object>> getUserSessions(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Long userId = getCurrentUserId();
-        return Result.success(customerService.findSessionsByUserId(userId));
+        
+        // 计算总数
+        int total = customerService.getSessionCount(userId);
+
+        // 获取分页数据
+        List<Map<String, Object>> sessions = customerService.findSessionsByUserId(userId, page, size);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", total);
+        result.put("sessions", sessions);
+
+        return Result.success(result);
     }
 
     /**
      * 获取店铺的会话列表
+     *
      * @param storeId 店铺ID
-     * @param page 页码（从1开始）
-     * @param size 每页大小
+     * @param page    页码（从1开始）
+     * @param size    每页大小
      * @return 店铺的会话列表
      */
     @GetMapping("/sessions/store/{storeId}")
@@ -75,22 +93,23 @@ public class CustomerServiceController {
             @RequestParam(defaultValue = "10") int size) {
         // 验证当前用户是否为店铺所有者
         validateStoreOwner(storeId);
-        
+
         // 计算总数
         int total = customerService.getSessionCount(storeId);
-        
+
         // 获取分页数据
         List<Map<String, Object>> sessions = customerService.findSessionsByStoreId(storeId, page, size);
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("total", total);
         result.put("sessions", sessions);
-        
+
         return Result.success(result);
     }
 
     /**
      * 结束会话
+     *
      * @param sessionId 会话ID
      * @return 是否结束成功
      */
@@ -103,6 +122,7 @@ public class CustomerServiceController {
 
     /**
      * 获取会话消息
+     *
      * @param sessionId 会话ID
      * @return 消息列表
      */
@@ -115,7 +135,8 @@ public class CustomerServiceController {
 
     /**
      * 发送消息（用户）
-     * @param sessionId 会话ID
+     *
+     * @param sessionId  会话ID
      * @param messageDTO 消息信息
      * @return 发送的消息
      */
@@ -133,7 +154,8 @@ public class CustomerServiceController {
 
     /**
      * 发送消息（商家）
-     * @param sessionId 会话ID
+     *
+     * @param sessionId  会话ID
      * @param messageDTO 消息信息
      * @return 发送的消息
      */
@@ -153,6 +175,7 @@ public class CustomerServiceController {
 
     /**
      * 标记消息已读（用户）
+     *
      * @param sessionId 会话ID
      * @return 是否标记成功
      */
@@ -165,6 +188,7 @@ public class CustomerServiceController {
 
     /**
      * 标记消息已读（商家）
+     *
      * @param sessionId 会话ID
      * @return 是否标记成功
      */
@@ -177,7 +201,8 @@ public class CustomerServiceController {
 
     /**
      * 评价会话
-     * @param sessionId 会话ID
+     *
+     * @param sessionId     会话ID
      * @param evaluationDTO 评价信息
      * @return 是否评价成功
      */
@@ -194,6 +219,7 @@ public class CustomerServiceController {
 
     /**
      * 获取店铺的客服满意度
+     *
      * @param storeId 店铺ID
      * @return 客服满意度评分
      */
@@ -204,6 +230,7 @@ public class CustomerServiceController {
 
     /**
      * 获取客服满意度统计（管理员功能）
+     *
      * @return 各店铺的客服满意度统计
      */
     @GetMapping("/rating/stats")
@@ -214,7 +241,8 @@ public class CustomerServiceController {
 
     /**
      * 处理客服投诉（管理员功能）
-     * @param sessionId 会话ID
+     *
+     * @param sessionId    会话ID
      * @param complaintDTO 投诉处理信息
      * @return 是否处理成功
      */

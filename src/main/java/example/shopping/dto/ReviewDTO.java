@@ -15,30 +15,30 @@ import java.util.List;
 @Getter
 @Setter
 public class ReviewDTO {
-    
+
     /**
      * 商品ID，发布评论时必填
      */
     private Long productId;
-    
+
     /**
      * 订单ID，发布评论时必填
      */
     private Long orderId;
-    
+
     /**
      * 评论内容
      */
     @NotBlank(message = "评论内容不能为空")
     private String content;
-    
+
     /**
      * 评分(1-5星)，仅用户首次评论时必填
      */
     @Min(value = 1, message = "评分最低为1星")
     @Max(value = 5, message = "评分最高为5星")
     private Integer rating;
-    
+
     /**
      * 图片URLs
      */
@@ -54,4 +54,4 @@ public class ReviewDTO {
      */
     @NotNull(message = "评论类型不能为空")
     private Integer type;
-} 
+}

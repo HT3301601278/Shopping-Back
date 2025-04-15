@@ -59,19 +59,20 @@ public class CartServiceImpl implements CartService {
             try {
                 // 解析商品规格信息
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                java.util.Map<String, java.util.List<String>> specifications = 
-                    mapper.readValue(product.getSpecifications(), new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, java.util.List<String>>>() {});
-                
+                java.util.Map<String, java.util.List<String>> specifications =
+                        mapper.readValue(product.getSpecifications(), new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, java.util.List<String>>>() {
+                        });
+
                 // 验证规格是否合法
                 for (Map.Entry<String, String> entry : cartDTO.getSpecInfo().entrySet()) {
                     String specName = entry.getKey();
                     String specValue = entry.getValue();
-                    
+
                     // 检查规格名称是否存在
                     if (!specifications.containsKey(specName)) {
                         throw new BusinessException("无效的规格名称：" + specName);
                     }
-                    
+
                     // 检查规格值是否有效
                     if (!specifications.get(specName).contains(specValue)) {
                         throw new BusinessException("无效的规格值：" + specValue);
@@ -126,7 +127,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public int batchAdd(Long userId, List<CartDTO> cartDTOList) {
         int successCount = 0;
-        
+
         for (CartDTO cartDTO : cartDTOList) {
             try {
                 add(userId, cartDTO);
@@ -136,7 +137,7 @@ public class CartServiceImpl implements CartService {
                 // 这里可以选择记录日志
             }
         }
-        
+
         return successCount;
     }
 
@@ -233,11 +234,11 @@ public class CartServiceImpl implements CartService {
     public Map<String, Object> getCartAmount(Long userId) {
         List<Map<String, Object>> selectedCartList = getSelectedCartList(userId);
         Map<String, Object> result = new HashMap<>();
-        
+
         java.math.BigDecimal totalAmount = selectedCartList.stream()
                 .map(item -> (java.math.BigDecimal) item.get("totalPrice"))
                 .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-        
+
         result.put("totalAmount", totalAmount);
         result.put("itemCount", selectedCartList.size());
         return result;
@@ -250,6 +251,7 @@ public class CartServiceImpl implements CartService {
 
     /**
      * 将购物车项转换为Map，包含商品详情
+     *
      * @param cart 购物车项
      * @return 包含商品详情的Map
      */

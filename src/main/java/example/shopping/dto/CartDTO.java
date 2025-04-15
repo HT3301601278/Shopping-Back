@@ -11,13 +11,13 @@ import java.util.Map;
  */
 @Data
 public class CartDTO {
-    
+
     @NotNull(message = "商品ID不能为空")
     private Long productId;
-    
+
     private Map<String, String> specInfo;
-    
+
     @NotNull(message = "商品数量不能为空")
     @Min(value = 1, message = "商品数量必须大于0")
     private Integer quantity;
-} 
+}

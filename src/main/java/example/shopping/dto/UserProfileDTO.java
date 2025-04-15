@@ -11,16 +11,16 @@ import javax.validation.constraints.Size;
  */
 @Data
 public class UserProfileDTO {
-    
+
     @Size(max = 50, message = "姓名长度不能超过50个字符")
     private String name;
-    
+
     @NotBlank(message = "手机号不能为空")
     @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
     private String phone;
-    
+
     private String avatar;
-    
+
     @Size(max = 500, message = "地址长度不能超过500个字符")
     private String addresses;
-} 
+}

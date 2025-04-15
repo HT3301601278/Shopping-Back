@@ -10,40 +10,45 @@ import java.util.List;
  */
 @Mapper
 public interface ReviewMapper {
-    
+
     /**
      * 查询所有评论
+     *
      * @return 评论列表
      */
     @Select("SELECT * FROM reviews ORDER BY is_top DESC, create_time DESC")
     List<Review> findAll();
-    
+
     /**
      * 根据ID查询评论
+     *
      * @param id 评论ID
      * @return 评论信息
      */
     @Select("SELECT * FROM reviews WHERE id = #{id}")
     Review findById(Long id);
-    
+
     /**
      * 根据商品ID查询评论
+     *
      * @param productId 商品ID
      * @return 评论列表
      */
     @Select("SELECT * FROM reviews WHERE product_id = #{productId} ORDER BY is_top DESC, create_time DESC")
     List<Review> findByProductId(Long productId);
-    
+
     /**
      * 根据用户ID查询评论
+     *
      * @param userId 用户ID
      * @return 评论列表
      */
     @Select("SELECT * FROM reviews WHERE user_id = #{userId} ORDER BY create_time DESC")
     List<Review> findByUserId(Long userId);
-    
+
     /**
      * 根据订单ID查询评论
+     *
      * @param orderId 订单ID
      * @return 评论列表
      */
@@ -51,35 +56,39 @@ public interface ReviewMapper {
             "(SELECT id FROM reviews WHERE order_id = #{orderId}) " +
             "ORDER BY create_time ASC")
     List<Review> findByOrderId(Long orderId);
-    
+
     /**
      * 根据商品ID和用户ID查询评论
+     *
      * @param productId 商品ID
-     * @param userId 用户ID
+     * @param userId    用户ID
      * @return 评论信息
      */
     @Select("SELECT * FROM reviews WHERE product_id = #{productId} AND user_id = #{userId}")
     List<Review> findByProductIdAndUserId(@Param("productId") Long productId, @Param("userId") Long userId);
-    
+
     /**
      * 根据状态查询评论
+     *
      * @param status 状态
      * @return 评论列表
      */
     @Select("SELECT * FROM reviews WHERE status = #{status} ORDER BY create_time DESC")
     List<Review> findByStatus(Integer status);
-    
+
     /**
      * 分页查询评论
+     *
      * @param offset 偏移量
-     * @param limit 数量限制
+     * @param limit  数量限制
      * @return 评论列表
      */
     @Select("SELECT * FROM reviews ORDER BY is_top DESC, create_time DESC LIMIT #{offset}, #{limit}")
     List<Review> findByPage(@Param("offset") int offset, @Param("limit") int limit);
-    
+
     /**
      * 插入评论
+     *
      * @param review 评论信息
      * @return 影响行数
      */
@@ -89,9 +98,10 @@ public interface ReviewMapper {
             "#{parentId}, #{type}, #{status}, #{isTop}, #{createTime}, #{updateTime})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Review review);
-    
+
     /**
      * 更新评论
+     *
      * @param review 评论信息
      * @return 影响行数
      */
@@ -108,63 +118,70 @@ public interface ReviewMapper {
             "WHERE id = #{id}" +
             "</script>")
     int update(Review review);
-    
+
     /**
      * 删除评论
+     *
      * @param id 评论ID
      * @return 影响行数
      */
     @Delete("DELETE FROM reviews WHERE id = #{id}")
     int deleteById(Long id);
-    
+
     /**
      * 更新评论状态
-     * @param id 评论ID
+     *
+     * @param id     评论ID
      * @param status 状态
      * @param reason 审核原因
      * @return 影响行数
      */
     @Update("UPDATE reviews SET status = #{status}, reason = #{reason}, update_time = NOW() WHERE id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") Integer status, @Param("reason") String reason);
-    
+
     /**
      * 更新评论置顶状态
-     * @param id 评论ID
+     *
+     * @param id    评论ID
      * @param isTop 是否置顶
      * @return 影响行数
      */
     @Update("UPDATE reviews SET is_top = #{isTop}, update_time = NOW() WHERE id = #{id}")
     int updateTopStatus(@Param("id") Long id, @Param("isTop") Boolean isTop);
-    
+
     /**
      * 统计商品评论数量
+     *
      * @param productId 商品ID
      * @return 评论数量
      */
     @Select("SELECT COUNT(*) FROM reviews WHERE product_id = #{productId} AND status = 0")
     int countByProductId(Long productId);
-    
+
     /**
      * 计算商品平均评分
+     *
      * @param productId 商品ID
      * @return 平均评分
      */
     @Select("SELECT AVG(rating) FROM reviews WHERE product_id = #{productId} AND status = 0 AND type = 0")
     Double calculateAverageRating(Long productId);
-    
+
     /**
      * 根据商品ID和状态查询评论
+     *
      * @param productId 商品ID
-     * @param status 评论状态
+     * @param status    评论状态
      * @return 评论列表
      */
     @Select("SELECT * FROM reviews WHERE product_id = #{productId} AND status = #{status} ORDER BY is_top DESC, create_time DESC")
     List<Review> findByProductIdAndStatus(@Param("productId") Long productId, @Param("status") Integer status);
-    
+
     /**
      * 商家查询与自己商品相关的评论
+     *
      * @param productId 商品ID
-     * @param storeId 店铺ID
+     * @param storeId   店铺ID
      * @return 评论列表
      */
     @Select("SELECT r.* FROM reviews r " +
@@ -173,28 +190,31 @@ public interface ReviewMapper {
             "(SELECT store_id FROM products WHERE id = #{productId}) " +
             "ORDER BY r.is_top DESC, r.create_time DESC")
     List<Review> findByProductIdForMerchant(@Param("productId") Long productId);
-    
+
     /**
      * 查询评论的所有回复
+     *
      * @param parentId 父评论ID
      * @return 回复列表
      */
     @Select("SELECT * FROM reviews WHERE parent_id = #{parentId} ORDER BY create_time ASC")
     List<Review> findRepliesByParentId(Long parentId);
-    
+
     /**
      * 查询商品的所有原始评论（非回复）
+     *
      * @param productId 商品ID
      * @return 评论列表
      */
     @Select("SELECT * FROM reviews WHERE product_id = #{productId} AND parent_id IS NULL " +
             "ORDER BY is_top DESC, create_time DESC")
     List<Review> findOriginalReviewsByProductId(Long productId);
-    
+
     /**
      * 查询商品的所有原始评论及其回复
+     *
      * @param productId 商品ID
-     * @param status 状态
+     * @param status    状态
      * @return 评论列表
      */
     @Select("SELECT * FROM reviews WHERE (product_id = #{productId} AND parent_id IS NULL) " +
@@ -209,36 +229,37 @@ public interface ReviewMapper {
      * 1. 如果是回复，则查询原始评论
      * 2. 同一用户在同一商品/订单下的所有评论及回复
      * 3. 其他用户对该评论的所有回复
+     *
      * @param reviewId 评论ID
      * @return 评论及其所有相关回复列表
      */
     @Select({
-        "SELECT DISTINCT r.* FROM reviews r",
-        "JOIN (",
-        "    SELECT user_id, product_id, order_id",
-        "    FROM reviews",
-        "    WHERE id = #{reviewId}",
-        ") target",
-        "WHERE r.id = #{reviewId}",  // 当前评论
-        "OR (",
-        "    r.user_id = target.user_id",  // 同一用户
-        "    AND r.product_id = target.product_id",  // 同一商品
-        "    AND (r.order_id = target.order_id OR target.order_id IS NULL)",  // 同一订单（如果有）
-        ")",
-        "OR r.parent_id = #{reviewId}",  // 直接回复
-        "OR r.id IN (",  // 原始评论（如果当前是回复）
-        "    SELECT parent_id",
-        "    FROM reviews",
-        "    WHERE id = #{reviewId}",
-        "    AND parent_id IS NOT NULL",
-        ")",
-        "OR r.parent_id IN (",  // 同一原始评论下的其他回复
-        "    SELECT parent_id",
-        "    FROM reviews",
-        "    WHERE id = #{reviewId}",
-        "    AND parent_id IS NOT NULL",
-        ")",
-        "ORDER BY r.create_time ASC"
+            "SELECT DISTINCT r.* FROM reviews r",
+            "JOIN (",
+            "    SELECT user_id, product_id, order_id",
+            "    FROM reviews",
+            "    WHERE id = #{reviewId}",
+            ") target",
+            "WHERE r.id = #{reviewId}",  // 当前评论
+            "OR (",
+            "    r.user_id = target.user_id",  // 同一用户
+            "    AND r.product_id = target.product_id",  // 同一商品
+            "    AND (r.order_id = target.order_id OR target.order_id IS NULL)",  // 同一订单（如果有）
+            ")",
+            "OR r.parent_id = #{reviewId}",  // 直接回复
+            "OR r.id IN (",  // 原始评论（如果当前是回复）
+            "    SELECT parent_id",
+            "    FROM reviews",
+            "    WHERE id = #{reviewId}",
+            "    AND parent_id IS NOT NULL",
+            ")",
+            "OR r.parent_id IN (",  // 同一原始评论下的其他回复
+            "    SELECT parent_id",
+            "    FROM reviews",
+            "    WHERE id = #{reviewId}",
+            "    AND parent_id IS NOT NULL",
+            ")",
+            "ORDER BY r.create_time ASC"
     })
     List<Review> findReviewAndAllReplies(Long reviewId);
-} 
+}

@@ -21,7 +21,8 @@ public class PaymentController {
 
     /**
      * 支付订单
-     * @param orderId 订单ID
+     *
+     * @param orderId     订单ID
      * @param paymentType 支付方式
      * @return 支付结果
      */
@@ -35,8 +36,9 @@ public class PaymentController {
 
     /**
      * 申请退款
+     *
      * @param orderId 订单ID
-     * @param reason 退款原因
+     * @param reason  退款原因
      * @return 退款申请结果
      */
     @PostMapping("/refund")
@@ -49,6 +51,7 @@ public class PaymentController {
 
     /**
      * 处理退款申请
+     *
      * @param orderId 订单ID
      * @param isAgree 是否同意退款
      * @return 处理结果
@@ -64,10 +67,11 @@ public class PaymentController {
 
     /**
      * 获取支付方式列表
+     *
      * @return 支付方式列表
      */
     @GetMapping("/methods")
     public Result<Map<String, String>> getPaymentMethods() {
         return Result.success(paymentService.getPaymentMethods());
     }
-} 
+}

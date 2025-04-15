@@ -25,12 +25,13 @@ public class CartController {
 
     @Autowired
     private CartService cartService;
-    
+
     @Autowired
     private UserService userService;
 
     /**
      * 获取当前用户购物车列表
+     *
      * @return 购物车列表
      */
     @GetMapping
@@ -41,6 +42,7 @@ public class CartController {
 
     /**
      * 添加商品到购物车
+     *
      * @param cartDTO 购物车商品信息
      * @return 添加结果
      */
@@ -49,9 +51,10 @@ public class CartController {
         Long userId = getCurrentUserId();
         return Result.success(cartService.add(userId, cartDTO), "添加购物车成功");
     }
-    
+
     /**
      * 批量添加商品到购物车
+     *
      * @param cartDTOList 购物车商品信息列表
      * @return 添加结果
      */
@@ -64,7 +67,8 @@ public class CartController {
 
     /**
      * 更新购物车商品数量
-     * @param id 购物车项ID
+     *
+     * @param id       购物车项ID
      * @param quantity 数量
      * @return 更新结果
      */
@@ -76,7 +80,8 @@ public class CartController {
 
     /**
      * 更新购物车商品选择状态
-     * @param id 购物车项ID
+     *
+     * @param id       购物车项ID
      * @param selected 选择状态
      * @return 更新结果
      */
@@ -88,6 +93,7 @@ public class CartController {
 
     /**
      * 更新所有购物车商品选择状态
+     *
      * @param selected 选择状态
      * @return 更新结果
      */
@@ -99,6 +105,7 @@ public class CartController {
 
     /**
      * 删除购物车商品
+     *
      * @param id 购物车项ID
      * @return 删除结果
      */
@@ -110,6 +117,7 @@ public class CartController {
 
     /**
      * 清空购物车
+     *
      * @return 清空结果
      */
     @DeleteMapping
@@ -120,6 +128,7 @@ public class CartController {
 
     /**
      * 删除已选择的购物车商品
+     *
      * @return 删除结果
      */
     @DeleteMapping("/selected")
@@ -130,6 +139,7 @@ public class CartController {
 
     /**
      * 获取购物车商品数量
+     *
      * @return 商品数量
      */
     @GetMapping("/count")
@@ -140,6 +150,7 @@ public class CartController {
 
     /**
      * 获取已选择的购物车商品列表
+     *
      * @return 已选择的购物车商品列表
      */
     @GetMapping("/selected")
@@ -147,9 +158,10 @@ public class CartController {
         Long userId = getCurrentUserId();
         return Result.success(cartService.getSelectedCartList(userId));
     }
-    
+
     /**
      * 获取购物车已选择商品的总价
+     *
      * @return 总价信息
      */
     @GetMapping("/amount")
@@ -157,16 +169,17 @@ public class CartController {
         Long userId = getCurrentUserId();
         return Result.success(cartService.getCartAmount(userId));
     }
-    
+
     /**
      * 检查商品是否已在购物车中
+     *
      * @param productId 商品ID
-     * @param specInfo 规格信息
+     * @param specInfo  规格信息
      * @return 是否在购物车中
      */
     @GetMapping("/check")
-    public Result<Boolean> checkProductInCart(@RequestParam Long productId, 
-                                             @RequestParam(required = false) String specInfo) {
+    public Result<Boolean> checkProductInCart(@RequestParam Long productId,
+                                              @RequestParam(required = false) String specInfo) {
         Long userId = getCurrentUserId();
         Cart cart = cartService.checkProductInCart(userId, productId, specInfo);
         return Result.success(cart != null);
@@ -174,17 +187,18 @@ public class CartController {
 
     /**
      * 获取当前登录用户ID
+     *
      * @return 用户ID
      */
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        
+
         User user = userService.findByUsername(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
         return user.getId();
     }
-} 
+}

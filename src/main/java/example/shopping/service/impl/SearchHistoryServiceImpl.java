@@ -26,13 +26,13 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
         if (searchHistoryDTO.getKeyword() == null || searchHistoryDTO.getKeyword().trim().isEmpty()) {
             return null;
         }
-        
+
         SearchHistory searchHistory = new SearchHistory();
         searchHistory.setUserId(userId);
         searchHistory.setKeyword(searchHistoryDTO.getKeyword().trim());
         searchHistory.setResultCount(searchHistoryDTO.getResultCount());
         searchHistory.setCreateTime(new Date());
-        
+
         try {
             int result = searchHistoryMapper.insert(searchHistory);
             return result > 0 ? searchHistory : null;
@@ -55,14 +55,14 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
         if (limit == null || limit <= 0) {
             limit = 10; // 默认返回10个
         }
-        
+
         try {
             // 获取所有搜索历史并按时间排序
             List<SearchHistory> allHistories = searchHistoryMapper.findByUserId(userId);
-            
+
             // 按创建时间倒序排序
             allHistories.sort(Comparator.comparing(SearchHistory::getCreateTime).reversed());
-            
+
             // 返回前limit条记录
             if (allHistories.size() <= limit) {
                 return allHistories;
@@ -79,7 +79,7 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
     public boolean delete(Long userId, Long id) {
         // 确保只能删除自己的搜索历史
         SearchHistory history = null;
-        
+
         // 查找指定ID的历史记录
         for (SearchHistory sh : searchHistoryMapper.findByUserId(userId)) {
             if (sh.getId().equals(id)) {
@@ -87,11 +87,11 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
                 break;
             }
         }
-        
+
         if (history == null || !history.getUserId().equals(userId)) {
             return false;
         }
-        
+
         return searchHistoryMapper.deleteById(id) > 0;
     }
 
@@ -106,14 +106,14 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
         if (limit == null || limit <= 0) {
             limit = 10; // 默认返回10个
         }
-        
+
         // 获取用户的所有搜索历史
         List<SearchHistory> histories = searchHistoryMapper.findByUserId(userId);
-        
+
         // 统计关键词频率
         Map<String, Long> keywordCount = histories.stream()
                 .collect(Collectors.groupingBy(SearchHistory::getKeyword, Collectors.counting()));
-        
+
         // 转换为列表并按频率排序
         List<Map<String, Object>> result = new ArrayList<>();
         keywordCount.forEach((keyword, count) -> {
@@ -122,10 +122,10 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
             item.put("count", count);
             result.add(item);
         });
-        
+
         // 按搜索次数降序排序
-        result.sort((a, b) -> Long.compare((Long)b.get("count"), (Long)a.get("count")));
-        
+        result.sort((a, b) -> Long.compare((Long) b.get("count"), (Long) a.get("count")));
+
         // 返回前limit条
         if (result.size() <= limit) {
             return result;
@@ -139,8 +139,8 @@ public class SearchHistoryServiceImpl implements SearchHistoryService {
         if (limit == null || limit <= 0) {
             limit = 10; // 默认返回10个
         }
-        
+
         // 使用SearchHistoryMapper来获取全局热门关键词
         return searchHistoryMapper.findHotKeywords(limit);
     }
-} 
+}

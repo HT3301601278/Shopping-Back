@@ -25,16 +25,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userMapper.findByUsername(username);
-        
+
         if (user == null) {
             throw new UsernameNotFoundException("用户不存在: " + username);
         }
-        
+
         // 检查用户状态
         if (user.getStatus() != 1) {
             throw new UsernameNotFoundException("用户已被禁用: " + username);
         }
-        
+
         // 构建Spring Security的UserDetails对象
         return org.springframework.security.core.userdetails.User
                 .withUsername(username)
@@ -46,4 +46,4 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .disabled(false)
                 .build();
     }
-} 
+}

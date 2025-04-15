@@ -22,7 +22,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     private CategoryMapper categoryMapper;
-    
+
     @Autowired
     private ProductMapper productMapper;
 
@@ -56,7 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
                 throw new BusinessException("该分类名称已存在");
             }
         }
-        
+
         // 设置分类层级
         if (category.getParentId() == null || category.getParentId() == 0) {
             category.setLevel(1);
@@ -67,17 +67,17 @@ public class CategoryServiceImpl implements CategoryService {
             }
             category.setLevel(parentCategory.getLevel() + 1);
         }
-        
+
         // 如果没有设置排序值，默认放到最后
         if (category.getSortOrder() == null) {
             category.setSortOrder(categoryMapper.count() + 1);
         }
-        
+
         // 默认启用状态
         if (category.getStatus() == null) {
             category.setStatus(1);
         }
-        
+
         categoryMapper.insert(category);
         return category;
     }
@@ -89,7 +89,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (existingCategory == null) {
             throw new BusinessException("分类不存在");
         }
-        
+
         // 检查名称是否重复
         if (category.getName() != null && !category.getName().equals(existingCategory.getName())) {
             Category sameNameCategory = categoryMapper.findByName(category.getName());
@@ -97,7 +97,7 @@ public class CategoryServiceImpl implements CategoryService {
                 throw new BusinessException("该分类名称已存在");
             }
         }
-        
+
         // 更新层级
         if (category.getParentId() != null && !category.getParentId().equals(existingCategory.getParentId())) {
             if (category.getParentId() == 0) {
@@ -110,7 +110,7 @@ public class CategoryServiceImpl implements CategoryService {
                 category.setLevel(parentCategory.getLevel() + 1);
             }
         }
-        
+
         categoryMapper.update(category);
         return categoryMapper.findById(category.getId());
     }
@@ -122,18 +122,18 @@ public class CategoryServiceImpl implements CategoryService {
         if (category == null) {
             throw new BusinessException("分类不存在");
         }
-        
+
         // 检查是否有子分类
         List<Category> children = categoryMapper.findByParentId(id);
         if (children != null && !children.isEmpty()) {
             throw new BusinessException("请先删除子分类");
         }
-        
+
         // 检查是否有关联的商品
         if (productMapper.countByCategoryId(id) > 0) {
             throw new BusinessException("该分类下存在商品，无法删除");
         }
-        
+
         return categoryMapper.deleteById(id) > 0;
     }
 
@@ -141,24 +141,25 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> getTree() {
         // 获取所有分类
         List<Category> allCategories = categoryMapper.findAll();
-        
+
         // 按父ID分组
         Map<Long, List<Category>> parentIdMap = allCategories.stream()
-                .collect(Collectors.groupingBy(category -> 
-                    category.getParentId() == null ? 0L : category.getParentId()));
-        
+                .collect(Collectors.groupingBy(category ->
+                        category.getParentId() == null ? 0L : category.getParentId()));
+
         // 获取根分类
         List<Category> rootCategories = parentIdMap.getOrDefault(0L, new ArrayList<>());
-        
+
         // 递归构建子分类
         rootCategories.forEach(root -> buildChildren(root, parentIdMap));
-        
+
         return rootCategories;
     }
-    
+
     /**
      * 递归构建子分类
-     * @param parent 父分类
+     *
+     * @param parent      父分类
      * @param parentIdMap 按父ID分组的分类Map
      */
     private void buildChildren(Category parent, Map<Long, List<Category>> parentIdMap) {
@@ -168,4 +169,4 @@ public class CategoryServiceImpl implements CategoryService {
             children.forEach(child -> buildChildren(child, parentIdMap));
         }
     }
-} 
+}

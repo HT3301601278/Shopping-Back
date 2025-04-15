@@ -26,12 +26,13 @@ public class AddressController {
 
     @Autowired
     private AddressService addressService;
-    
+
     @Autowired
     private UserService userService;
 
     /**
      * 获取当前用户的所有地址
+     *
      * @return 地址列表
      */
     @GetMapping
@@ -42,6 +43,7 @@ public class AddressController {
 
     /**
      * 获取地址详情
+     *
      * @param id 地址ID
      * @return 地址信息
      */
@@ -49,17 +51,18 @@ public class AddressController {
     public Result<Address> getAddressById(@PathVariable Long id) {
         Long userId = getCurrentUserId();
         Address address = addressService.findById(id);
-        
+
         // 验证地址是否属于当前用户
         if (address == null || !address.getUserId().equals(userId)) {
             return Result.error("地址不存在");
         }
-        
+
         return Result.success(address);
     }
 
     /**
      * 获取默认地址
+     *
      * @return 默认地址
      */
     @GetMapping("/default")
@@ -70,6 +73,7 @@ public class AddressController {
 
     /**
      * 添加地址
+     *
      * @param addressDTO 地址信息
      * @return 添加的地址
      */
@@ -81,7 +85,8 @@ public class AddressController {
 
     /**
      * 更新地址
-     * @param id 地址ID
+     *
+     * @param id         地址ID
      * @param addressDTO 地址信息
      * @return 更新后的地址
      */
@@ -95,6 +100,7 @@ public class AddressController {
 
     /**
      * 删除地址
+     *
      * @param id 地址ID
      * @return 是否删除成功
      */
@@ -106,6 +112,7 @@ public class AddressController {
 
     /**
      * 设置默认地址
+     *
      * @param id 地址ID
      * @return 是否设置成功
      */
@@ -117,13 +124,14 @@ public class AddressController {
 
     /**
      * 获取当前登录用户ID
+     *
      * @return 用户ID
      */
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
-        
+
         User user = userService.findByUsername(username);
         if (user == null) {
             throw new RuntimeException("用户不存在");
@@ -140,4 +148,4 @@ public class AddressController {
         }
         return Result.success(address);
     }
-} 
+}

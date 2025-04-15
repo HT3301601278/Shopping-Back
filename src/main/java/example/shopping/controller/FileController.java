@@ -51,7 +51,6 @@ public class FileController {
      * 上传店铺logo
      */
     @PostMapping("/stores/logos")
-    @PreAuthorize("hasRole('MERCHANT')")
     public Result<String> uploadStoreLogo(@RequestParam("file") MultipartFile file) {
         validateImageFile(file);
         String fileUrl = fileStorageService.store(file, "stores/logos");
@@ -62,7 +61,6 @@ public class FileController {
      * 上传营业执照
      */
     @PostMapping("/stores/licenses")
-    @PreAuthorize("hasRole('MERCHANT')")
     public Result<String> uploadStoreLicense(@RequestParam("file") MultipartFile file) {
         validateDocumentFile(file);
         String fileUrl = fileStorageService.store(file, "stores/licenses");

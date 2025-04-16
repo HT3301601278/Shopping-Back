@@ -12,7 +12,7 @@
 - **API文档**：Swagger (SpringDoc)
 - **日志系统**：SLF4J + Logback
 - **事务管理**：Spring Transaction
-- **JSON处理**：Fastjson
+- **JSON处理**：Jackson
 - **请求验证**：Spring Validation
 
 ## 系统功能
@@ -216,14 +216,6 @@
        username: 你的用户名
        password: 你的密码
    ```
-
-### 启动步骤
-
-1. 克隆代码仓库
-2. 进入项目根目录
-3. 执行`mvn clean install`构建项目
-4. 执行`mvn spring-boot:run`或运行`ShoppingApplication`类启动应用
-5. 访问`http://localhost:8080`进入系统
 
 ## 系统架构
 

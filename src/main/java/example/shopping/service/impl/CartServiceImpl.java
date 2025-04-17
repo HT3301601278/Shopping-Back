@@ -59,8 +59,8 @@ public class CartServiceImpl implements CartService {
             try {
                 // 解析商品规格信息
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                java.util.Map<String, java.util.List<String>> specifications =
-                        mapper.readValue(product.getSpecifications(), new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, java.util.List<String>>>() {
+                java.util.Map<String, Object> productSpecifications =
+                        mapper.readValue(product.getSpecifications(), new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, Object>>() {
                         });
 
                 // 验证规格是否合法
@@ -69,13 +69,26 @@ public class CartServiceImpl implements CartService {
                     String specValue = entry.getValue();
 
                     // 检查规格名称是否存在
-                    if (!specifications.containsKey(specName)) {
+                    if (!productSpecifications.containsKey(specName)) {
                         throw new BusinessException("无效的规格名称：" + specName);
                     }
 
                     // 检查规格值是否有效
-                    if (!specifications.get(specName).contains(specValue)) {
-                        throw new BusinessException("无效的规格值：" + specValue);
+                    Object specValues = productSpecifications.get(specName);
+                    if (specValues instanceof java.util.List) {
+                        // 处理列表形式的规格值
+                        @SuppressWarnings("unchecked")
+                        java.util.List<String> valueList = (java.util.List<String>) specValues;
+                        if (!valueList.contains(specValue)) {
+                            throw new BusinessException("无效的规格值：" + specValue);
+                        }
+                    } else if (specValues instanceof String) {
+                        // 处理字符串形式的规格值
+                        if (!specValues.equals(specValue)) {
+                            throw new BusinessException("无效的规格值：" + specValue);
+                        }
+                    } else {
+                        throw new BusinessException("规格信息格式不支持");
                     }
                 }
             } catch (com.fasterxml.jackson.core.JsonProcessingException e) {

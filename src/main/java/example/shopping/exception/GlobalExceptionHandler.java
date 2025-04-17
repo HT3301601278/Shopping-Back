@@ -31,6 +31,15 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Result<Void> handleBusinessException(BusinessException e) {
         log.error("业务异常: {}", e.getMessage());
+        
+        // 处理认证相关的业务异常，返回401状态码
+        if (e.getMessage() != null && (
+                e.getMessage().contains("账户已被封禁") || 
+                e.getMessage().equals("账号不存在") || 
+                e.getMessage().equals("密码错误"))) {
+            return Result.error(401, e.getMessage());
+        }
+        
         return Result.error(e.getMessage());
     }
 
@@ -41,6 +50,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public Result<Void> handleAuthenticationException(Exception e) {
         log.error("认证异常: {}", e.getMessage());
+        
+        // 如果是用户名未找到异常，返回原始错误消息（包括账户封禁提示）
+        if (e instanceof UsernameNotFoundException) {
+            return Result.error(401, e.getMessage());
+        }
+        
+        // 其他认证异常使用通用消息
         return Result.error(401, "无效的用户凭证");
     }
 

@@ -32,7 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // 检查用户状态
         if (user.getStatus() != 1) {
-            throw new UsernameNotFoundException("用户已被禁用: " + username);
+            throw new UsernameNotFoundException("账户已被封禁，请联系管理员: " + username);
         }
 
         // 构建Spring Security的UserDetails对象

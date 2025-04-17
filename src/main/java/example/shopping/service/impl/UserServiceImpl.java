@@ -15,8 +15,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -39,28 +43,49 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
+    @Autowired
+    private UserDetailsService userDetailsService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public Map<String, Object> login(LoginDTO loginDTO) {
-        // 执行认证
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                loginDTO.getUsername(), loginDTO.getPassword());
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        // 生成JWT令牌
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtTokenUtil.generateToken(userDetails);
-
-        // 获取用户信息
+        // 先检查用户状态
         User user = userMapper.findByUsername(loginDTO.getUsername());
+        
+        // 账号不存在，直接抛出异常
+        if (user == null) {
+            throw new BusinessException("账号不存在");
+        }
+        
+        // 用户已被封禁
+        if (user.getStatus() != 1) {
+            throw new BusinessException("账户已被封禁，请联系管理员");
+        }
+        
+        try {
+            // 执行认证
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    loginDTO.getUsername(), loginDTO.getPassword());
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 返回结果
-        Map<String, Object> result = new HashMap<>();
-        result.put("token", token);
-        user.setPassword(null); // 不返回密码
-        result.put("user", user);
+            // 生成JWT令牌
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String token = jwtTokenUtil.generateToken(userDetails);
 
-        return result;
+            // 返回结果
+            Map<String, Object> result = new HashMap<>();
+            result.put("token", token);
+            user.setPassword(null); // 不返回密码
+            result.put("user", user);
+
+            return result;
+        } catch (BadCredentialsException e) {
+            // 密码错误
+            throw new BusinessException("密码错误");
+        }
     }
 
     @Override

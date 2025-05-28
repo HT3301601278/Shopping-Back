@@ -10,6 +10,7 @@
 - **安全认证**：Spring Security、JWT (JSON Web Token)
 - **数据库**：MySQL 8.0+
 - **数据库连接池**：HikariCP
+- **文件存储**：本地文件存储系统(FileStorageService)
 - **API文档**：Swagger (SpringDoc)
 - **日志系统**：SLF4J + Logback
 - **事务管理**：Spring Transaction
@@ -143,6 +144,7 @@
 - 好评/中评/差评筛选
 - 评论状态管理（0-正常显示, 1-待审核, 2-隐藏）
 - 评论置顶功能
+- 评论类型区分（0-用户评论, 1-商家回复, 2-用户追评）
 
 ### 7. 客户服务
 
@@ -206,9 +208,9 @@
 - Order (订单)：包含订单号、商品项、金额、收货地址、支付信息、订单状态等
 - Store (店铺)：商家店铺信息，包括店名、描述、联系方式、营业执照等
 - Address (地址)：用户收货地址，含收件人、手机号、省市区等详细地址信息
-- Review (评价)：商品评价记录，包含评分、内容、图片、状态（正常/待审核/隐藏）等
+- Review (评价)：商品评价记录，包含评分、内容、图片、评论类型(原始评论/商家回复/追评)、状态（正常/待审核/隐藏）等
 - Announcement (公告)：系统公告，包括标题、内容、发布状态等
-- CustomerServiceSession (客服会话)：客服会话记录，包含会话状态、评价及投诉处理信息
+- CustomerServiceSession (客服会话)：客服会话记录，包含会话状态、评价及投诉处理信息(complaintStatus:0-待处理,1-已处理,2-已驳回)
 - CustomerServiceMessage (客服消息)：会话中的消息内容，包含文本/图片/文件等多种格式
 - SearchHistory (搜索历史)：记录用户搜索关键词和结果统计
 - Favorite (收藏夹)：用户收藏的商品记录
@@ -239,7 +241,7 @@
 
 - **控制层(Controller)**：处理HTTP请求，返回响应
 - **服务层(Service)**：实现业务逻辑
-- **数据访问层(Mapper/Repository)**：与数据库交互
+- **数据访问层(Mapper/Repository)**：与数据库交互，同时使用MyBatis的Mapper和JPA的Repository
 - **实体层(Entity)**：数据模型
 - **数据传输对象(DTO)**：数据传输
 - **工具类(Utils)**：通用功能与帮助类
@@ -250,6 +252,7 @@
 
 - Spring Security认证框架
 - JWT令牌认证（令牌有效期限制）
+- JwtAuthenticationFilter过滤器实现令牌验证
 - 接口权限控制（基于@PreAuthorize注解）
 - 密码加密（BCrypt算法）
 - SQL注入防护
